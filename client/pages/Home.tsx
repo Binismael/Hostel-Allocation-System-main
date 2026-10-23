@@ -1,0 +1,520 @@
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import {
+  Users,
+  Building2,
+  BarChart3,
+  Lock,
+  ArrowRight,
+  CheckCircle,
+  Zap,
+  Shield,
+  TrendingUp,
+  Clock,
+  Award,
+  Lightbulb,
+} from "lucide-react";
+
+export default function Home() {
+  const features = [
+    {
+      icon: Users,
+      title: "Student Management",
+      description: "Easily manage student profiles, requests, and allocations",
+    },
+    {
+      icon: Building2,
+      title: "Room Management",
+      description: "Track rooms, blocks, and availability in real-time",
+    },
+    {
+      icon: BarChart3,
+      title: "Analytics Dashboard",
+      description: "View occupancy rates and allocation statistics",
+    },
+    {
+      icon: Lock,
+      title: "Secure System",
+      description: "Role-based access control and data protection",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Navigation Header */}
+      <header className="border-b border-border bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets%2Fece4a38457b3429d9a1e0894c73e7ff5%2F4ecbbe642ea440d8b9b0f1335b69fa8f?format=webp&width=800"
+            alt="Foreign Links Campus Logo"
+            className="w-16 h-16 object-contain"
+          />
+          <div className="flex gap-3">
+            <Link to="/student/login">
+              <Button variant="outline">Student Login</Button>
+            </Link>
+            <Link to="/admin/dashboard">
+              <Button className="bg-primary hover:bg-primary/90">
+                Admin Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <div className="space-y-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground">
+            Foreign Links Campus Hostel Management
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Welcome to Foreign Links Campus Moro Ife North. Our comprehensive
+            hostel allocation system helps manage room assignments, student
+            requests, and accommodation administration efficiently.
+          </p>
+          <div className="flex gap-4 justify-center pt-4">
+            <Link to="/student/login">
+              <Button
+                size="lg"
+                className="gap-2 bg-primary hover:bg-primary/90"
+              >
+                Student Portal
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <Link to="/admin/dashboard">
+              <Button size="lg" variant="outline">
+                Admin Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Hostel Building Image Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="rounded-xl overflow-hidden shadow-lg">
+          <AspectRatio ratio={16 / 9} className="bg-secondary/20">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2F09bfc473205142bd8eaf54b6aaca1b7a%2F2da5f5e0c15c472190979aec6d38f515?format=webp&width=800"
+              alt="Hostel Building"
+              className="w-full h-full object-cover"
+            />
+          </AspectRatio>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="bg-secondary/20 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
+              Powerful Features
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Everything you need to manage hostel allocations efficiently
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <Card key={index} className="border border-border p-6">
+                  <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    {feature.description}
+                  </p>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Key Capabilities */}
+      <section
+        id="benefits"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
+      >
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-foreground mb-4">
+            Key Capabilities
+          </h2>
+          <p className="text-muted-foreground text-lg">
+            Streamline your hostel management process
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {[
+            "Real-time room availability tracking",
+            "Automated allocation generation with unique IDs",
+            "Color-coded status indicators (green, yellow, red)",
+            "Advanced search and filter capabilities",
+            "Student request management and processing",
+            "Admin dashboard with analytics",
+            "Comprehensive data tables with sorting",
+            "Mobile-responsive design",
+          ].map((capability, index) => (
+            <div key={index} className="flex gap-4">
+              <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-1" />
+              <div>
+                <p className="text-foreground font-medium">{capability}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="bg-secondary/20 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
+              How It Works
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              A streamlined process designed for efficiency and transparency
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="border border-border p-6 text-center">
+              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                Students Submit Requests
+              </h3>
+              <p className="text-muted-foreground">
+                Students create accounts and submit their hostel room allocation
+                requests with preferences and requirements.
+              </p>
+            </Card>
+
+            <Card className="border border-border p-6 text-center">
+              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Zap className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                Automated Processing
+              </h3>
+              <p className="text-muted-foreground">
+                The system intelligently processes allocations based on
+                availability, preferences, and institutional policies.
+              </p>
+            </Card>
+
+            <Card className="border border-border p-6 text-center">
+              <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                Instant Confirmation
+              </h3>
+              <p className="text-muted-foreground">
+                Students receive immediate confirmation with their allocation
+                details and can track their status in real-time.
+              </p>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* For Students Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 className="text-4xl font-bold text-foreground mb-6">
+              For Students
+            </h2>
+            <p className="text-lg text-muted-foreground mb-6">
+              The Foreign Links Campus hostel allocation system empowers
+              students with transparency and control over their accommodation
+              requests.
+            </p>
+            <ul className="space-y-4">
+              <li className="flex gap-3">
+                <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                <span className="text-foreground">
+                  Easy online room request submission
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                <span className="text-foreground">
+                  Real-time allocation status tracking
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                <span className="text-foreground">
+                  View available rooms and blocks
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                <span className="text-foreground">
+                  Access allocation confirmation details
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                <span className="text-foreground">
+                  Mobile-friendly student portal
+                </span>
+              </li>
+            </ul>
+            <Link to="/student/login" className="inline-block mt-8">
+              <Button
+                size="lg"
+                className="gap-2 bg-primary hover:bg-primary/90"
+              >
+                Access Student Portal
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+          </div>
+          <Card className="border border-border p-8 bg-secondary/10">
+            <h3 className="text-2xl font-semibold text-foreground mb-6">
+              Student Benefits
+            </h3>
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <Clock className="w-6 h-6 text-primary flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-foreground">Save Time</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Complete allocation in minutes, not hours
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <Shield className="w-6 h-6 text-primary flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-foreground">
+                    Fair & Transparent
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Know your status every step of the way
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <Award className="w-6 h-6 text-primary flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-foreground">
+                    Secure Access
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Personal data protected with authentication
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* For Administrators Section */}
+      <section className="bg-secondary/20 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <Card className="border border-border p-8 bg-primary/5 order-last md:order-first">
+              <h3 className="text-2xl font-semibold text-foreground mb-6">
+                Admin Advantages
+              </h3>
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <TrendingUp className="w-6 h-6 text-primary flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-foreground">
+                      Detailed Analytics
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Track occupancy rates and allocation patterns
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <Zap className="w-6 h-6 text-primary flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-foreground">
+                      Automated Processing
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Reduce manual work with intelligent algorithms
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <Lightbulb className="w-6 h-6 text-primary flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-foreground">
+                      Full Control
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Manage all allocations from one dashboard
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <div>
+              <h2 className="text-4xl font-bold text-foreground mb-6">
+                For Administrators
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Manage hostel operations efficiently with comprehensive
+                administrative tools and real-time insights.
+              </p>
+              <ul className="space-y-4">
+                <li className="flex gap-3">
+                  <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">
+                    Manage student profiles and database
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">
+                    Configure hostel blocks and rooms
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">
+                    Generate and manage allocations
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">
+                    View comprehensive analytics and reports
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">
+                    Role-based access control and security
+                  </span>
+                </li>
+              </ul>
+              <Link to="/admin/dashboard" className="inline-block mt-8">
+                <Button size="lg" variant="outline">
+                  Admin Dashboard
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-foreground mb-4">
+            Why Choose Our System?
+          </h2>
+          <p className="text-muted-foreground text-lg">
+            Built specifically for educational institutions
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="border border-border p-6">
+            <div className="bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+              <Zap className="w-6 h-6 text-accent" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              Fast & Efficient
+            </h3>
+            <p className="text-muted-foreground">
+              Reduce allocation time from weeks to days with automated
+              processing
+            </p>
+          </Card>
+
+          <Card className="border border-border p-6">
+            <div className="bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+              <Shield className="w-6 h-6 text-accent" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              Secure & Reliable
+            </h3>
+            <p className="text-muted-foreground">
+              Enterprise-grade security with role-based access control
+            </p>
+          </Card>
+
+          <Card className="border border-border p-6">
+            <div className="bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+              <Award className="w-6 h-6 text-accent" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              Proven Results
+            </h3>
+            <p className="text-muted-foreground">
+              Trusted by educational institutions for fair and transparent
+              allocations
+            </p>
+          </Card>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-primary text-white py-20">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Ready to Get Started?
+          </h2>
+          <p className="text-white/80 text-lg mb-8">
+            Choose your portal to manage your hostel allocation at Foreign Links
+            Campus.
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Link to="/student/login">
+              <Button
+                size="lg"
+                className="gap-2 bg-white text-primary hover:bg-gray-100"
+              >
+                Student Portal
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <Link to="/admin/dashboard">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white text-white hover:bg-white/10"
+              >
+                Admin Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-background/50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-muted-foreground">
+            © 2026 Foreign Links Campus Moro Ife North. Hostel Management
+            System. All rights reserved.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
