@@ -95,6 +95,16 @@ const hostels = [
       },
     ],
   },
+  {
+    name: "Military Hostel",
+    details: "10 self-contained rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fe1d61ee95a094f9091f089e3f7ce921c?format=webp&width=800&height=1200",
+        alt: "Exterior view of Military Hostel",
+      },
+    ],
+  },
 ];
 
 function HostelGallery({ hostel }: { hostel: (typeof hostels)[number] }) {
@@ -110,40 +120,44 @@ function HostelGallery({ hostel }: { hostel: (typeof hostels)[number] }) {
           <p className="absolute bottom-4 left-5 text-sm font-medium text-white sm:bottom-6 sm:left-7">
             {hostel.name} · {hostel.details}
           </p>
-          <div className="absolute bottom-3 right-4 flex gap-2 sm:bottom-5 sm:right-6">
-            <button
-              type="button"
-              aria-label={`Previous ${hostel.name} photo`}
-              onClick={() => setSelected((selected - 1 + hostel.images.length) % hostel.images.length)}
-              className="rounded-full bg-white/90 p-2 text-foreground shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              aria-label={`Next ${hostel.name} photo`}
-              onClick={() => setSelected((selected + 1) % hostel.images.length)}
-              className="rounded-full bg-white/90 p-2 text-foreground shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
+          {hostel.images.length > 1 && (
+            <div className="absolute bottom-3 right-4 flex gap-2 sm:bottom-5 sm:right-6">
+              <button
+                type="button"
+                aria-label={`Previous ${hostel.name} photo`}
+                onClick={() => setSelected((selected - 1 + hostel.images.length) % hostel.images.length)}
+                className="rounded-full bg-white/90 p-2 text-foreground shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                aria-label={`Next ${hostel.name} photo`}
+                onClick={() => setSelected((selected + 1) % hostel.images.length)}
+                className="rounded-full bg-white/90 p-2 text-foreground shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          )}
         </AspectRatio>
       </div>
-      <div className={`mt-4 grid gap-3 sm:gap-4 ${hostel.images.length === 3 ? "grid-cols-3" : "grid-cols-2"}`} aria-label={`Choose a ${hostel.name} photo`}>
-        {hostel.images.map((photo, index) => (
-          <button
-            key={photo.src}
-            type="button"
-            aria-label={`View photo ${index + 1}: ${photo.alt}`}
-            aria-pressed={selected === index}
-            onClick={() => setSelected(index)}
-            className={`overflow-hidden rounded-lg border-2 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected === index ? "border-primary" : "border-transparent opacity-70 hover:opacity-100"}`}
-          >
-            <img src={photo.src} alt="" className="h-20 w-full object-cover sm:h-28" loading="lazy" />
-          </button>
-        ))}
-      </div>
+      {hostel.images.length > 1 && (
+        <div className={`mt-4 grid gap-3 sm:gap-4 ${hostel.images.length === 3 ? "grid-cols-3" : "grid-cols-2"}`} aria-label={`Choose a ${hostel.name} photo`}>
+          {hostel.images.map((photo, index) => (
+            <button
+              key={photo.src}
+              type="button"
+              aria-label={`View photo ${index + 1}: ${photo.alt}`}
+              aria-pressed={selected === index}
+              onClick={() => setSelected(index)}
+              className={`overflow-hidden rounded-lg border-2 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected === index ? "border-primary" : "border-transparent opacity-70 hover:opacity-100"}`}
+            >
+              <img src={photo.src} alt="" className="h-20 w-full object-cover sm:h-28" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
