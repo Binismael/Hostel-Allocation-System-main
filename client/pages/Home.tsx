@@ -105,6 +105,16 @@ const hostels = [
       },
     ],
   },
+  {
+    name: "Amazing Hostel",
+    details: "15 self-contained rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fc8829d07417742b7875558452ef0dd5c?format=webp&width=800&height=1200",
+        alt: "Exterior view of Amazing Hostel",
+      },
+    ],
+  },
 ];
 
 function HostelGallery({ hostel }: { hostel: (typeof hostels)[number] }) {
