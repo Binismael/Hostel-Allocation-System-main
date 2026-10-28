@@ -81,6 +81,20 @@ const hostels = [
       },
     ],
   },
+  {
+    name: "Gbenjo Hostel",
+    details: "10 standard rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fe410b5a59da64141853a1dda4ebcb21d?format=webp&width=800&height=1200",
+        alt: "Front view of Gbenjo Hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F9bf97d883ef246738d46fbc19b8cf1a0?format=webp&width=800&height=1200",
+        alt: "Side view of Gbenjo Hostel",
+      },
+    ],
+  },
 ];
 
 function HostelGallery({ hostel }: { hostel: (typeof hostels)[number] }) {
