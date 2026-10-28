@@ -67,6 +67,20 @@ const hostels = [
       },
     ],
   },
+  {
+    name: "Peace of Mind Hostel",
+    details: "14 self-contained rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F1694f3005bc645f2911f59e9031b0d82?format=webp&width=800&height=1200",
+        alt: "Front view of Peace of Mind Hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fe97b3111a01349f1ab33f17eaf20260e?format=webp&width=800&height=1200",
+        alt: "Side view of Peace of Mind Hostel",
+      },
+    ],
+  },
 ];
 
 function HostelGallery({ hostel }: { hostel: (typeof hostels)[number] }) {
