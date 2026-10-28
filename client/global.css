@@ -99,6 +99,10 @@
   }
 }
 
+#root {
+  zoom: 0.75;
+}
+
 @layer base {
   * {
     @apply border-border;
