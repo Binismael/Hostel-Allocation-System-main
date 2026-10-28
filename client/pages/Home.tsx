@@ -22,16 +22,16 @@ import {
 
 const hostelImages = [
   {
-    src: "https://images.pexels.com/photos/14601013/pexels-photo-14601013.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    alt: "Contemporary student housing in Tangier, Morocco",
+    src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fcae20b7dac8c49499afb0afe05f82caf?format=webp&width=800&height=1200",
+    alt: "Courtyard view of the new hostel building",
   },
   {
-    src: "https://images.pexels.com/photos/32033514/pexels-photo-32033514.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    alt: "Modern student housing buildings in Liverpool",
+    src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F3b19b85cf179429084fc57f4baba27e1?format=webp&width=800&height=1200",
+    alt: "Front view of the new hostel rooms",
   },
   {
-    src: "https://images.pexels.com/photos/18165722/pexels-photo-18165722.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    alt: "Hostel building in Balatonlelle, Hungary",
+    src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fb15d231eaf2c4bd3b6ee1ca7109c1777?format=webp&width=800&height=1200",
+    alt: "Side view of the new hostel building",
   },
 ];
 
@@ -40,13 +40,13 @@ function HostelGallery() {
   const image = hostelImages[selected];
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16" aria-label="Example hostel photo gallery">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16" aria-label="New hostel photo gallery">
       <div className="rounded-xl overflow-hidden shadow-lg">
         <AspectRatio ratio={16 / 9} className="bg-secondary/20">
           <img src={image.src} alt={image.alt} className="w-full h-full object-cover" />
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
           <p className="absolute bottom-4 left-5 text-sm font-medium text-white sm:bottom-6 sm:left-7">
-            Example hostel photos
+            New Hostel · 8 self-contained rooms
           </p>
           <div className="absolute bottom-3 right-4 flex gap-2 sm:bottom-5 sm:right-6">
             <button
