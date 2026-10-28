@@ -53,6 +53,20 @@ const hostels = [
       },
     ],
   },
+  {
+    name: "Jonkel Hostel",
+    details: "28 self-contained rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fd38cd0451d04443a8a9a0f89dfce319f?format=webp&width=800&height=1200",
+        alt: "Front view of Jonkel Hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fac0ec5ad35df4dbf98803634d9928aae?format=webp&width=800&height=1200",
+        alt: "Exterior view of Jonkel Hostel",
+      },
+    ],
+  },
 ];
 
 function HostelGallery({ hostel }: { hostel: (typeof hostels)[number] }) {
@@ -116,7 +130,7 @@ function HostelsSection() {
             Explore accommodation across our campus.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
           {hostels.map((hostel) => (
             <HostelGallery key={hostel.name} hostel={hostel} />
           ))}
