@@ -129,6 +129,16 @@ const hostels = [
       },
     ],
   },
+  {
+    name: "It Is Well Hostel",
+    details: "13 rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F0c74d4a6fdec4fb3a7b56a0a025a80ee?format=webp&width=800&height=1200",
+        alt: "Exterior view of It Is Well Hostel",
+      },
+    ],
+  },
 ];
 
 function HostelGallery({ hostel }: { hostel: (typeof hostels)[number] }) {
