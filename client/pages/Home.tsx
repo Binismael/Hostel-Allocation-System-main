@@ -115,6 +115,20 @@ const hostels = [
       },
     ],
   },
+  {
+    name: "Classic and Achievers",
+    details: "11 & 11 standard rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fa96faa9dba9640d2989da49c38e4bf0b?format=webp&width=800&height=1200",
+        alt: "Exterior view of Classic and Achievers hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F056d3a0030644f66a79c8928096909ec?format=webp&width=800&height=1200",
+        alt: "Second exterior view of Classic and Achievers hostel",
+      },
+    ],
+  },
 ];
 
 function HostelGallery({ hostel }: { hostel: (typeof hostels)[number] }) {
