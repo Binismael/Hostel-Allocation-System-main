@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -8,6 +9,8 @@ import {
   BarChart3,
   Lock,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle,
   Zap,
   Shield,
@@ -16,6 +19,72 @@ import {
   Award,
   Lightbulb,
 } from "lucide-react";
+
+const hostelImages = [
+  {
+    src: "https://images.pexels.com/photos/14601013/pexels-photo-14601013.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    alt: "Contemporary student housing in Tangier, Morocco",
+  },
+  {
+    src: "https://images.pexels.com/photos/32033514/pexels-photo-32033514.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    alt: "Modern student housing buildings in Liverpool",
+  },
+  {
+    src: "https://images.pexels.com/photos/18165722/pexels-photo-18165722.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    alt: "Hostel building in Balatonlelle, Hungary",
+  },
+];
+
+function HostelGallery() {
+  const [selected, setSelected] = useState(0);
+  const image = hostelImages[selected];
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16" aria-label="Example hostel photo gallery">
+      <div className="rounded-xl overflow-hidden shadow-lg">
+        <AspectRatio ratio={16 / 9} className="bg-secondary/20">
+          <img src={image.src} alt={image.alt} className="w-full h-full object-cover" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+          <p className="absolute bottom-4 left-5 text-sm font-medium text-white sm:bottom-6 sm:left-7">
+            Example hostel photos
+          </p>
+          <div className="absolute bottom-3 right-4 flex gap-2 sm:bottom-5 sm:right-6">
+            <button
+              type="button"
+              aria-label="Previous hostel photo"
+              onClick={() => setSelected((selected - 1 + hostelImages.length) % hostelImages.length)}
+              className="rounded-full bg-white/90 p-2 text-foreground shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              aria-label="Next hostel photo"
+              onClick={() => setSelected((selected + 1) % hostelImages.length)}
+              className="rounded-full bg-white/90 p-2 text-foreground shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        </AspectRatio>
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-3 sm:gap-4" aria-label="Choose a hostel photo">
+        {hostelImages.map((photo, index) => (
+          <button
+            key={photo.src}
+            type="button"
+            aria-label={`View photo ${index + 1}: ${photo.alt}`}
+            aria-pressed={selected === index}
+            onClick={() => setSelected(index)}
+            className={`overflow-hidden rounded-lg border-2 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected === index ? "border-primary" : "border-transparent opacity-70 hover:opacity-100"}`}
+          >
+            <img src={photo.src} alt="" className="h-20 w-full object-cover sm:h-28" loading="lazy" />
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const features = [
@@ -94,18 +163,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hostel Building Image Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="rounded-xl overflow-hidden shadow-lg">
-          <AspectRatio ratio={16 / 9} className="bg-secondary/20">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2F09bfc473205142bd8eaf54b6aaca1b7a%2F2da5f5e0c15c472190979aec6d38f515?format=webp&width=800"
-              alt="Hostel Building"
-              className="w-full h-full object-cover"
-            />
-          </AspectRatio>
-        </div>
-      </section>
+      <HostelGallery />
 
       {/* Features Section */}
       <section id="features" className="bg-secondary/20 py-20">
