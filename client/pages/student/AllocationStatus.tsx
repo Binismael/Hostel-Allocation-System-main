@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import StudentLayout from "@/components/layouts/StudentLayout";
 import { Card } from "@/components/ui/card";
@@ -34,7 +36,7 @@ const AllocationStatus = () => {
         // Get latest allocation
         const { data, error } = await supabase
           .from("allocations")
-          .select("*, rooms(room_number, capacity, blocks(name))")
+          .select("*, rooms(room_number, capacity, blocks(name)), bunks(bunk_number, level), hostel_payments(status, submitted_at)")
           .eq("student_id", student.id)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -46,27 +48,20 @@ const AllocationStatus = () => {
         }
 
         // Resolve roommates (if room assigned)
-        let roommateNames = "Not assigned yet";
+        let roommateNames = data.room_id ? "No roommates yet" : "Not assigned yet";
 
-        if (data.room_id) {
-          const { data: roommates, error: roommateError } = await supabase
-            .from("allocations")
-            .select("student_id, students(name)")
-            .eq("room_id", data.room_id)
-            .neq("student_id", student.id);
-
-          if (roommateError) {
-            console.error("Error fetching roommates:", roommateError);
-          } else if (roommates && roommates.length > 0) {
-            const names = roommates
-              .map((r: any) => r.students?.name)
-              .filter(Boolean);
-
-            if (names.length > 0) {
-              roommateNames = names.join(", ");
-            }
+        if (data.room_id && data.status === "approved") {
+          const { data: roommates } = await supabase.rpc("my_roommates");
+          if (roommates?.length) {
+            roommateNames = roommates
+              .map((r: any) => (r.bunk_number ? `${r.name} (${r.bunk_number})` : r.name))
+              .join(", ");
           }
         }
+
+        const latestPayment = [...(data.hostel_payments ?? [])].sort(
+          (a: any, b: any) => b.submitted_at.localeCompare(a.submitted_at),
+        )[0];
 
         setAllocation({
           id: data.id,
@@ -78,6 +73,9 @@ const AllocationStatus = () => {
             : "—",
           block: data.rooms?.blocks?.name || "—",
           capacity: data.rooms?.capacity || 0,
+          bunk: data.bunks ? `${data.bunks.bunk_number} (${data.bunks.level})` : "—",
+          paymentStatus: latestPayment?.status ?? null,
+          notes: data.notes,
           requestDate: new Date(data.created_at).toLocaleDateString(),
           allocatedDate: data.allocated_date
             ? new Date(data.allocated_date).toLocaleDateString()
@@ -138,9 +136,15 @@ const AllocationStatus = () => {
         <Card className="border border-amber-300 bg-amber-50 p-6">
           <div className="flex gap-3">
             <AlertCircle className="text-amber-600" />
-            <p className="text-amber-800">
-              You have not been allocated a room yet.
-            </p>
+            <div className="space-y-3">
+              <p className="text-amber-800">
+                You have not been allocated a room yet. Choose a room in the
+                Hostel Directory and submit your payment to get started.
+              </p>
+              <Button asChild size="sm">
+                <Link to="/student/hostel-directory">Choose a room</Link>
+              </Button>
+            </div>
           </div>
         </Card>
       </StudentLayout>
@@ -235,6 +239,10 @@ const AllocationStatus = () => {
               <p className="text-base font-medium">{allocation.room}</p>
             </div>
             <div>
+              <p className="text-sm text-muted-foreground mb-1">Bunk</p>
+              <p className="text-base font-medium">{allocation.bunk}</p>
+            </div>
+            <div>
               <p className="text-sm text-muted-foreground mb-1">Capacity</p>
               <p className="text-base font-medium">
                 {allocation.capacity} Bed(s)
@@ -259,10 +267,19 @@ const AllocationStatus = () => {
               Under Review
             </h3>
             <p className="text-sm text-amber-800">
-              Your room allocation request is currently being reviewed by the
-              administration. You will be notified once a decision has been
-              made.
+              {allocation.paymentStatus === "verified"
+                ? "Your payment is verified. A bunk will be assigned as soon as one becomes available."
+                : allocation.paymentStatus === "submitted"
+                  ? "Your payment is awaiting verification by the hostel office. You'll be notified once it is checked."
+                  : allocation.paymentStatus === "rejected"
+                    ? "Your last payment was rejected. Check your notifications for the reason and submit it again."
+                    : "Pay your hostel fee to complete your allocation."}
             </p>
+            {(!allocation.paymentStatus || allocation.paymentStatus === "rejected") && (
+              <Button asChild size="sm" className="mt-4">
+                <Link to="/student/hostel-directory">Choose a room and pay</Link>
+              </Button>
+            )}
           </Card>
         )}
 
@@ -272,9 +289,8 @@ const AllocationStatus = () => {
               Not Approved
             </h3>
             <p className="text-sm text-red-800">
-              Unfortunately, your room allocation request could not be approved
-              at this time. Please contact the administration office for more
-              information.
+              {allocation.notes ||
+                "Unfortunately, your room allocation request could not be approved at this time. Please contact the administration office for more information."}
             </p>
           </Card>
         )}

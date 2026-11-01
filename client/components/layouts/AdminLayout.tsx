@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -10,8 +10,12 @@ import {
   Menu,
   X,
   LogOut,
+  CreditCard,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { signOut, supabase } from "@/lib/supabase";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -20,6 +24,24 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [adminName, setAdminName] = useState("");
+
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from("admins")
+      .select("name")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setAdminName(data?.name ?? ""));
+  }, [user?.id]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/admin/login");
+  };
 
   const sidebarItems = [
     {
@@ -41,6 +63,16 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       label: "Occupied Rooms",
       href: "/admin/occupied-rooms",
       icon: DoorOpen,
+    },
+    {
+      label: "Payments",
+      href: "/admin/payments",
+      icon: CreditCard,
+    },
+    {
+      label: "Room Requests",
+      href: "/admin/room-requests",
+      icon: ClipboardList,
     },
     {
       label: "Allocations",
@@ -114,7 +146,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             variant="outline"
             size="sm"
             className="w-full justify-start"
-            onClick={() => (window.location.href = "/student/login")}
+            onClick={handleLogout}
           >
             <LogOut className="w-4 h-4 mr-2" />
             {sidebarOpen && <span>Logout</span>}
@@ -148,11 +180,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <span className="text-sm font-semibold text-white">A</span>
+                <span className="text-sm font-semibold text-white">
+                  {(adminName || "A").charAt(0).toUpperCase()}
+                </span>
               </div>
               <div className="hidden sm:block">
-                <p className="text-sm font-medium text-white">Admin</p>
-                <p className="text-xs text-white/70">Admin User</p>
+                <p className="text-sm font-medium text-white">{adminName || "Admin"}</p>
+                <p className="text-xs text-white/70">{user?.email ?? "Administrator"}</p>
               </div>
             </div>
           </div>

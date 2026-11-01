@@ -3,13 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit2, Trash2, Check, X } from "lucide-react";
+import { ArrowLeft, BedDouble, Edit2, Trash2, XCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  getAllocation,
-  deleteAllocation,
-  updateAllocation,
-} from "@/lib/supabase-db";
+import StatusBadge from "@/components/StatusBadge";
+import BunkAssignDialog, { type AssignTarget } from "@/components/admin/allocations/BunkAssignDialog";
+import ReleaseAllocationDialog, { type ReleaseTarget } from "@/components/admin/allocations/ReleaseAllocationDialog";
+import { getAllocation, deleteAllocation } from "@/lib/supabase-db";
+import { hasVerifiedRoomPayment } from "@/lib/admin-workflow";
 
 const ViewAllocationDetails = () => {
   const navigate = useNavigate();
@@ -17,7 +17,9 @@ const ViewAllocationDetails = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [allocation, setAllocation] = useState<any>(null);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [assignTarget, setAssignTarget] = useState<AssignTarget | null>(null);
+  const [releaseTarget, setReleaseTarget] = useState<ReleaseTarget | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const loadAllocationDetails = async () => {
@@ -57,7 +59,13 @@ const ViewAllocationDetails = () => {
     };
 
     loadAllocationDetails();
-  }, [allocationId, toast, navigate]);
+  }, [allocationId, toast, navigate, reloadKey]);
+
+  const reload = () => {
+    setAssignTarget(null);
+    setReleaseTarget(null);
+    setReloadKey((k) => k + 1);
+  };
 
   const handleEdit = () => {
     navigate(`/admin/allocations/edit/${allocationId}`);
@@ -94,36 +102,6 @@ const ViewAllocationDetails = () => {
     }
   };
 
-  const handleStatusChange = async (newStatus: string) => {
-    setIsUpdatingStatus(true);
-    try {
-      const { error } = await updateAllocation(allocationId || "", {
-        status: newStatus,
-      });
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update status",
-          variant: "destructive",
-        });
-      } else {
-        setAllocation({ ...allocation, status: newStatus });
-        toast({
-          title: "Success",
-          description: `Allocation status updated to ${newStatus}`,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update status",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdatingStatus(false);
-    }
-  };
-
   if (isLoading) {
     return (
       <AdminLayout>
@@ -144,29 +122,10 @@ const ViewAllocationDetails = () => {
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <Check className="w-4 h-4" />;
-      case "rejected":
-        return <X className="w-4 h-4" />;
-      default:
-        return null;
-    }
-  };
+  const paid = hasVerifiedRoomPayment(allocation);
+  const canAssign = allocation.status === "approved" || (paid && allocation.status === "pending");
+  const payment = allocation.hostel_payments?.[0];
+  const studentName = allocation.students?.name || "Student";
 
   return (
     <AdminLayout>
@@ -195,14 +154,16 @@ const ViewAllocationDetails = () => {
               <Edit2 className="w-4 h-4" />
               Edit
             </Button>
-            <Button
-              variant="destructive"
-              className="gap-2"
-              onClick={handleDelete}
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </Button>
+            {!allocation.bunk_id && !payment && (
+              <Button
+                variant="destructive"
+                className="gap-2"
+                onClick={handleDelete}
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </Button>
+            )}
           </div>
         </div>
 
@@ -214,53 +175,46 @@ const ViewAllocationDetails = () => {
               <h3 className="text-lg font-semibold text-foreground mb-4">
                 Allocation Status
               </h3>
-              <div className="flex items-center gap-4 mb-6">
-                <div
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${getStatusColor(
-                    allocation.status,
-                  )}`}
-                >
-                  {getStatusIcon(allocation.status)}
-                  {allocation.status.charAt(0).toUpperCase() +
-                    allocation.status.slice(1)}
-                </div>
+              <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
+                <StatusBadge status={paid && allocation.status === "pending" ? "waitlisted" : allocation.status} />
+                <span className="text-muted-foreground">
+                  Payment:{" "}
+                  {payment
+                    ? `${payment.payment_reference} · ${payment.hostel_fee_tiers?.name ?? ""}`
+                    : "none submitted"}
+                </span>
+                {payment && <StatusBadge status={payment.status} />}
               </div>
 
-              {/* Status Update Buttons */}
-              <div className="flex gap-2">
-                {allocation.status !== "approved" && (
+              <div className="flex flex-wrap gap-2">
+                {canAssign && (
                   <Button
                     variant="outline"
-                    className="border-green-200 text-green-700 hover:bg-green-50"
-                    onClick={() => handleStatusChange("approved")}
-                    disabled={isUpdatingStatus}
+                    className="gap-2 border-green-200 text-green-700 hover:bg-green-50"
+                    onClick={() => setAssignTarget({ allocationId: allocation.id, studentName })}
                   >
-                    <Check className="w-4 h-4 mr-2" />
-                    Approve
+                    <BedDouble className="h-4 w-4" />
+                    {allocation.bunk_id ? "Move to another bunk" : "Assign bunk"}
                   </Button>
                 )}
                 {allocation.status !== "rejected" && (
                   <Button
                     variant="outline"
-                    className="border-red-200 text-red-700 hover:bg-red-50"
-                    onClick={() => handleStatusChange("rejected")}
-                    disabled={isUpdatingStatus}
+                    className="gap-2 border-red-200 text-red-700 hover:bg-red-50"
+                    onClick={() =>
+                      setReleaseTarget({ allocationId: allocation.id, studentName, hasBunk: !!allocation.bunk_id })
+                    }
                   >
-                    <X className="w-4 h-4 mr-2" />
-                    Reject
-                  </Button>
-                )}
-                {allocation.status !== "pending" && (
-                  <Button
-                    variant="outline"
-                    className="border-yellow-200 text-yellow-700 hover:bg-yellow-50"
-                    onClick={() => handleStatusChange("pending")}
-                    disabled={isUpdatingStatus}
-                  >
-                    Pending
+                    <XCircle className="h-4 w-4" />
+                    {allocation.bunk_id ? "Release bunk" : "Reject"}
                   </Button>
                 )}
               </div>
+              {!paid && allocation.status === "pending" && (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  A bunk can be assigned after the student&apos;s room payment is verified.
+                </p>
+              )}
             </div>
 
             {/* Student Information */}
@@ -301,8 +255,17 @@ const ViewAllocationDetails = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Room</p>
                   <p className="text-lg font-semibold text-foreground">
-                    {allocation.rooms?.block_id}-
-                    {allocation.rooms?.room_number || "N/A"}
+                    {allocation.rooms
+                      ? `${allocation.rooms.blocks?.name ?? ""} · Room ${allocation.rooms.room_number}`
+                      : "Not assigned"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Bunk</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    {allocation.bunks
+                      ? `${allocation.bunks.bunk_number} (${allocation.bunks.level})`
+                      : "Not assigned"}
                   </p>
                 </div>
                 <div>
@@ -375,6 +338,9 @@ const ViewAllocationDetails = () => {
           </Button>
         </div>
       </div>
+
+      <BunkAssignDialog target={assignTarget} onClose={() => setAssignTarget(null)} onAssigned={reload} />
+      <ReleaseAllocationDialog target={releaseTarget} onClose={() => setReleaseTarget(null)} onReleased={reload} />
     </AdminLayout>
   );
 };

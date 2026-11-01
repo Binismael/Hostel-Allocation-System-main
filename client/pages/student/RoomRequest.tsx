@@ -18,9 +18,8 @@ import {
   getStudent,
   getStudentByEmail,
   createStudent,
-  createAllocation,
-  createNotification,
 } from "@/lib/supabase-db";
+import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
 const RoomRequest = () => {
@@ -143,7 +142,7 @@ const RoomRequest = () => {
         phone: phone.trim(),
         semester,
         comments: comments?.trim() || null,
-        allocation_reason: allocationReason?.trim() || null,
+        allocation_reason: allocationReason || "regular",
 
         preference_1_block_id: preferences[0] || null,
         preference_2_block_id: preferences[1] || null,
@@ -160,22 +159,6 @@ const RoomRequest = () => {
       const { error } = await supabase.from("room_requests").insert([payload]);
 
       if (error) throw error;
-
-      await createAllocation({
-        allocation_id: crypto.randomUUID(),
-        student_id: studentData.id,
-        status: "pending",
-        request_date: new Date().toISOString(),
-      });
-
-      await createNotification({
-        type: "room_request",
-        title: "New Room Request",
-        message: `${studentData.name} submitted a room request`,
-        student_id: studentData.id,
-        is_read: false,
-        created_at: new Date().toISOString(),
-      });
 
       toast({
         title: "Success",
@@ -216,7 +199,18 @@ const RoomRequest = () => {
           <h3 className="text-2xl font-bold text-green-900 mb-2">
             Request Submitted Successfully!
           </h3>
-          <Button onClick={() => setSubmitted(false)}>Submit Another</Button>
+          <p className="mb-6 text-green-800">
+            Next, choose a room and pay the hostel fee. A bunk is assigned once
+            the hostel office verifies your payment.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button asChild>
+              <Link to="/student/hostel-directory">Choose a room</Link>
+            </Button>
+            <Button variant="outline" onClick={() => setSubmitted(false)}>
+              Submit Another
+            </Button>
+          </div>
         </Card>
       </StudentLayout>
     );

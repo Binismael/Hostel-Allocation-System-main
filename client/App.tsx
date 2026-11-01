@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 
 // Pages
@@ -24,7 +24,8 @@ import AdminSettings from "./pages/admin/Settings";
 import AddStudent from "./pages/admin/AddStudent";
 import AddExistingStudent from "./pages/admin/AddExistingStudent";
 import AddRoom from "./pages/admin/AddRoom";
-import AddAllocation from "./pages/admin/AddAllocation";
+import AdminPayments from "./pages/admin/Payments";
+import AdminRoomRequests from "./pages/admin/RoomRequests";
 import EditAllocation from "./pages/admin/EditAllocation";
 import ViewAllocationDetails from "./pages/admin/ViewAllocationDetails";
 import AddBlock from "./pages/admin/AddBlock";
@@ -42,6 +43,8 @@ import StudentRoomRequest from "./pages/student/RoomRequest";
 import StudentProfile from "./pages/student/Profile";
 import StudentHostelDirectory from "./pages/student/HostelDirectory";
 import StudentPayment from "./pages/student/Payment";
+import StudentMyPayments from "./pages/student/MyPayments";
+import StudentNotifications from "./pages/student/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -148,9 +151,21 @@ const App = () => (
             />
             <Route
               path="/admin/allocations/add"
+              element={<Navigate to="/admin/allocations?filter=awaiting" replace />}
+            />
+            <Route
+              path="/admin/payments"
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <AddAllocation />
+                  <AdminPayments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/room-requests"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminRoomRequests />
                 </ProtectedRoute>
               }
             />
@@ -250,6 +265,22 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="student">
                   <StudentPayment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/payments"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentMyPayments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/notifications"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentNotifications />
                 </ProtectedRoute>
               }
             />

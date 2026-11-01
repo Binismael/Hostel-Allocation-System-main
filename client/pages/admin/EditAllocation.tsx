@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { getAllocation, updateAllocation, getRooms } from "@/lib/supabase-db";
+import { getAllocation, updateAllocation } from "@/lib/supabase-db";
 
 const EditAllocation = () => {
   const navigate = useNavigate();
@@ -22,10 +22,8 @@ const EditAllocation = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingAllocation, setIsLoadingAllocation] = useState(true);
-  const [rooms, setRooms] = useState<any[]>([]);
   const [allocation, setAllocation] = useState<any>(null);
   const [formData, setFormData] = useState({
-    roomId: "",
     allocationDate: "",
     checkInDate: "",
     priority: "normal",
@@ -47,10 +45,7 @@ const EditAllocation = () => {
 
       try {
         setIsLoadingAllocation(true);
-        const [allocationRes, roomsRes] = await Promise.all([
-          getAllocation(allocationId),
-          getRooms(),
-        ]);
+        const allocationRes = await getAllocation(allocationId);
 
         if (allocationRes.error) {
           toast({
@@ -62,7 +57,6 @@ const EditAllocation = () => {
         } else if (allocationRes.data) {
           setAllocation(allocationRes.data);
           setFormData({
-            roomId: allocationRes.data.room_id || "",
             allocationDate: allocationRes.data.allocated_date || "",
             checkInDate: allocationRes.data.check_in_date || "",
             priority: allocationRes.data.priority || "normal",
@@ -71,15 +65,6 @@ const EditAllocation = () => {
           });
         }
 
-        if (!roomsRes.error && roomsRes.data) {
-          const formattedRooms = (roomsRes.data || []).map((room: any) => ({
-            id: room.id,
-            number: room.room_number,
-            block_id: room.block_id,
-            capacity: room.capacity,
-          }));
-          setRooms(formattedRooms);
-        }
       } catch (error) {
         toast({
           title: "Error",
@@ -118,8 +103,7 @@ const EditAllocation = () => {
     setIsLoading(true);
     try {
       const { error } = await updateAllocation(allocationId || "", {
-        room_id: formData.roomId || null,
-        allocated_date: formData.allocationDate,
+        allocated_date: formData.allocationDate || null,
         check_in_date: formData.checkInDate || null,
         priority: formData.priority,
         reason: formData.allocationReason,
@@ -230,25 +214,21 @@ const EditAllocation = () => {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Assign Room *
+                    Room / bunk
                   </label>
-                  <Select
-                    value={formData.roomId}
-                    onValueChange={(value) =>
-                      handleSelectChange("roomId", value)
+                  <Input
+                    type="text"
+                    value={
+                      allocation.rooms
+                        ? `${allocation.rooms.blocks?.name ?? ""} · Room ${allocation.rooms.room_number}${allocation.bunks ? ` · ${allocation.bunks.bunk_number}` : ""}`
+                        : "Not assigned"
                     }
-                  >
-                    <SelectTrigger className="border border-input">
-                      <SelectValue placeholder="Select a room" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rooms.map((room) => (
-                        <SelectItem key={room.id} value={room.id}>
-                          {room.block_id}-{room.number} (Capacity: {room.capacity})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    disabled
+                    className="border border-input bg-secondary/30"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Change the bunk from the allocation details page.
+                  </p>
                 </div>
 
                 <div className="space-y-2">

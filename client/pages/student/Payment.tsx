@@ -19,6 +19,7 @@ import {
 import PaymentTypeSelector from "@/components/student/payment/PaymentTypeSelector";
 import TransferDetailsFields from "@/components/student/payment/TransferDetailsFields";
 import EmailAuthorization from "@/components/student/payment/EmailAuthorization";
+import { getSettings, type Settings } from "@/lib/settings";
 
 const Payment = () => {
   const { user } = useAuth();
@@ -37,10 +38,25 @@ const Payment = () => {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submittedReference, setSubmittedReference] = useState("");
+  const [settings, setSettings] = useState<Settings | null>(null);
 
   useEffect(() => {
     getFeeTiers().then(({ data }) => setTiers(data));
+    getSettings().then(({ data }) => {
+      setSettings(data);
+      setDetails((prev) => ({
+        ...prev,
+        recipientAccountNumber: prev.recipientAccountNumber || data.bank_account_number,
+        recipientAccountName: prev.recipientAccountName || data.bank_account_name,
+      }));
+    });
   }, []);
+
+  const account = {
+    accountName: settings?.bank_account_name || HOSTEL_ACCOUNT.accountName,
+    accountNumber: settings?.bank_account_number || HOSTEL_ACCOUNT.accountNumber,
+    bankName: settings?.bank_name || HOSTEL_ACCOUNT.bankName,
+  };
 
   useEffect(() => {
     if (!roomId) return;
@@ -141,15 +157,23 @@ const Payment = () => {
           </p>
         </div>
 
-        {HOSTEL_ACCOUNT.accountNumber && (
+        {account.accountNumber && (
           <Card className="flex items-start gap-3 border border-primary/40 bg-primary/5 p-4">
             <Landmark className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
             <div className="text-sm">
               <p className="font-semibold text-foreground">Pay to</p>
               <p className="text-muted-foreground">
-                {HOSTEL_ACCOUNT.accountName} · {HOSTEL_ACCOUNT.accountNumber}
-                {HOSTEL_ACCOUNT.bankName ? ` · ${HOSTEL_ACCOUNT.bankName}` : ""}
+                {account.accountName} · {account.accountNumber}
+                {account.bankName ? ` · ${account.bankName}` : ""}
               </p>
+              {settings?.payment_instructions && (
+                <p className="mt-1 text-muted-foreground">{settings.payment_instructions}</p>
+              )}
+              {settings?.allocation_deadline && (
+                <p className="mt-1 font-medium text-foreground">
+                  Deadline: {new Date(settings.allocation_deadline).toLocaleDateString()}
+                </p>
+              )}
             </div>
           </Card>
         )}
