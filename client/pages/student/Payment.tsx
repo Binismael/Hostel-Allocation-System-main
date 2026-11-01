@@ -8,9 +8,12 @@ import { useAuth } from "@/context/AuthContext";
 import { getRoom, getStudentByEmail } from "@/lib/supabase-db";
 import {
   emptyTransferDetails,
+  findTier,
+  getFeeTiers,
   HOSTEL_ACCOUNT,
-  submitPayment,
+  submitBankTransfer,
   validateTransfer,
+  type FeeTier,
   type PaymentType,
 } from "@/lib/payments";
 import PaymentTypeSelector from "@/components/student/payment/PaymentTypeSelector";
@@ -23,15 +26,21 @@ const Payment = () => {
   const roomId = searchParams.get("room") ?? "";
 
   const [room, setRoom] = useState<any>(null);
+  const [tiers, setTiers] = useState<FeeTier[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [type, setType] = useState<PaymentType>(
     roomId ? "room_fee" : "room_exemption",
   );
   const [details, setDetails] = useState(emptyTransferDetails);
+  const [receipt, setReceipt] = useState<File | null>(null);
   const [authorized, setAuthorized] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submittedReference, setSubmittedReference] = useState("");
+
+  useEffect(() => {
+    getFeeTiers().then(({ data }) => setTiers(data));
+  }, []);
 
   useEffect(() => {
     if (!roomId) return;
@@ -45,58 +54,56 @@ const Payment = () => {
     );
   }, [user?.email]);
 
+  const roomTier = room ? findTier(tiers, "room_fee", room.room_category) : undefined;
+  const exemptionTier = findTier(tiers, "room_exemption");
+  const selectedTier = type === "room_fee" ? roomTier : exemptionTier;
+
   const roomLabel = room
     ? `${room.blocks?.name ?? "Hostel"} · Room ${room.room_number} (${room.room_category ?? "standard"})`
     : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validationError = validateTransfer(type, room?.id ?? "", details);
+    const validationError = validateTransfer(
+      type,
+      room?.id ?? "",
+      details,
+      receipt,
+    );
     if (validationError) {
       setError(validationError);
+      return;
+    }
+    if (!selectedTier) {
+      setError("This fee is not available right now. Please contact the hostel office.");
       return;
     }
     if (!authorized) {
       setError("Authorize this payment with the code sent to your email");
       return;
     }
-    if (!studentId || !user?.email) {
+    if (!studentId) {
       setError("Your student profile could not be found. Please log in again.");
       return;
     }
 
     setError("");
     setSubmitting(true);
-    const { error: submitError } = await submitPayment({
+    const { data, error: submitError } = await submitBankTransfer({
       studentId,
-      email: user.email,
-      roomId: room?.id ?? "",
-      type,
+      tierCode: selectedTier.code,
+      roomId: type === "room_fee" ? room.id : null,
       details,
+      receipt: receipt!,
     });
     setSubmitting(false);
 
-    if (!submitError) {
-      setSubmittedReference(details.referenceId.trim());
+    if (submitError) {
+      if (submitError.expired) setAuthorized(false);
+      setError(submitError.message);
       return;
     }
-    if (submitError.code === "23505") {
-      setError("This reference ID has already been submitted.");
-    } else if (submitError.code === "42501") {
-      setAuthorized(false);
-      setError(
-        "Your email authorization has expired. Send a new code and try again.",
-      );
-    } else if (
-      submitError.code === "42P01" ||
-      submitError.code === "PGRST205"
-    ) {
-      setError(
-        "Online payment submission isn't available yet. Please contact the hostel office.",
-      );
-    } else {
-      setError(submitError.message || "Could not submit your payment.");
-    }
+    setSubmittedReference(data?.payment_reference ?? details.referenceId);
   };
 
   if (submittedReference) {
@@ -108,11 +115,12 @@ const Payment = () => {
             Payment submitted
           </h2>
           <p className="mt-2 text-muted-foreground">
-            Reference{" "}
+            Payment{" "}
             <span className="font-semibold text-foreground">
               {submittedReference}
             </span>{" "}
-            is pending confirmation by the hostel office.
+            is waiting for the hostel office to verify it. You&apos;ll be
+            notified once your room is assigned.
           </p>
           <Button asChild className="mt-6">
             <Link to="/student/allocation-status">View allocation status</Link>
@@ -129,7 +137,7 @@ const Payment = () => {
           <h2 className="text-3xl font-bold text-foreground">Payment</h2>
           <p className="mt-1 text-muted-foreground">
             Pay by bank transfer, then submit your transfer details for
-            confirmation.
+            verification.
           </p>
         </div>
 
@@ -159,13 +167,17 @@ const Payment = () => {
                 value={type}
                 onChange={setType}
                 roomLabel={roomLabel}
+                roomFee={roomTier?.amount ?? null}
+                exemptionFee={exemptionTier?.amount ?? null}
               />
             </section>
 
             <TransferDetailsFields
-              type={type}
+              amount={selectedTier?.amount ?? null}
               value={details}
               onChange={setDetails}
+              receipt={receipt}
+              onReceiptChange={setReceipt}
             />
 
             <section className="space-y-3" aria-labelledby="pay-auth-heading">

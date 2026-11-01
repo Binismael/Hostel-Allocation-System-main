@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { getBlocks, getStudentByEmail } from "@/lib/supabase-db";
 import type { RoomCategory } from "@/lib/hostel-directory";
+import { findTier, getFeeTiers, type FeeTier } from "@/lib/payments";
 import HostelCategoryCard from "@/components/student/HostelCategoryCard";
 
 const CATEGORY_SECTIONS: {
@@ -27,6 +28,7 @@ const HostelDirectory = () => {
   const [studentData, setStudentData] = useState<any>(null);
   const [userAllocations, setUserAllocations] = useState<any[]>([]);
   const [userPreferences, setUserPreferences] = useState<any>(null);
+  const [tiers, setTiers] = useState<FeeTier[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -43,6 +45,9 @@ const HostelDirectory = () => {
           .order("room_number");
         if (roomsError) console.error("Rooms error:", roomsError);
         setRooms(roomsData || []);
+
+        const { data: tierData } = await getFeeTiers();
+        setTiers(tierData);
 
         if (user?.email) {
           const { data: student } = await getStudentByEmail(user.email);
@@ -161,6 +166,7 @@ const HostelDirectory = () => {
                         rooms={blockRooms}
                         preference={getStudentPreference(block.id)}
                         isAllocated={isAllocatedToBlock(block.id)}
+                        fee={findTier(tiers, "room_fee", category)?.amount ?? null}
                       />
                     ))}
                   </div>

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { createStudent, signupStudentAccount } from "@/lib/supabase-db";
+import { signupStudentAccount, upsertStudent } from "@/lib/supabase-db";
 import {
   emptyCredentials,
   emptyStudentDetails,
@@ -53,7 +53,7 @@ const AddStudent = () => {
         return;
       }
 
-      const { error: studentError } = await createStudent({
+      const { error: studentError } = await upsertStudent({
         id: authData.user.id,
         student_id: generateStudentId(authData.user.id),
         ...studentRecord,

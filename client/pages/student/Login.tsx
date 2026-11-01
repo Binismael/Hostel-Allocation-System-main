@@ -7,8 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, LogIn, AlertCircle, MailCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { createStudent, getStudentByEmail } from "@/lib/supabase-db";
-import { generateStudentId } from "@/lib/student-registration";
+import { getStudentByEmail, upsertStudent } from "@/lib/supabase-db";
+import {
+  generateStudentId,
+  pickProfileFields,
+} from "@/lib/student-registration";
 import { useToast } from "@/components/ui/use-toast";
 import StudentRegisterForm from "@/components/student/StudentRegisterForm";
 
@@ -50,19 +53,22 @@ const StudentLogin = () => {
         return;
       }
 
+      // The database creates a bare student row at sign-up; complete it once
+      // with the details saved during registration.
       const user = data.user;
       const { data: existingStudent } = await getStudentByEmail(user.email!);
+      const savedDetails = pickProfileFields(
+        user.user_metadata?.student_details,
+      );
 
-      if (!existingStudent) {
-        const savedDetails = user.user_metadata?.student_details;
-        const fallbackName = user.email!.split("@")[0].replace(/[._]/g, " ");
-
-        await createStudent({
-          phone: "",
-          name: fallbackName,
+      if (!existingStudent || (!existingStudent.phone && savedDetails.phone)) {
+        await upsertStudent({
+          name:
+            existingStudent?.name ||
+            user.email!.split("@")[0].replace(/[._]/g, " "),
           ...savedDetails,
           id: user.id,
-          student_id: generateStudentId(user.id),
+          student_id: existingStudent?.student_id ?? generateStudentId(user.id),
           email: user.email,
         });
       }

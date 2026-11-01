@@ -50,6 +50,15 @@ export async function createStudent(student: any) {
   return { data, error };
 }
 
+export async function upsertStudent(student: any) {
+  const { data, error } = await supabase
+    .from("students")
+    .upsert([student], { onConflict: "id" })
+    .select()
+    .single();
+  return { data, error };
+}
+
 export async function updateStudent(id: string, updates: any) {
   const { data, error } = await supabase
     .from("students")

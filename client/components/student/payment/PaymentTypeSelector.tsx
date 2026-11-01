@@ -1,16 +1,14 @@
 import { Link } from "react-router-dom";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  formatNaira,
-  ROOM_EXEMPTION_FEE,
-  type PaymentType,
-} from "@/lib/payments";
+import { formatNaira, type PaymentType } from "@/lib/payments";
 
 interface PaymentTypeSelectorProps {
   value: PaymentType;
   onChange: (value: PaymentType) => void;
   roomLabel: string | null;
+  roomFee: number | null;
+  exemptionFee: number | null;
 }
 
 const optionClassName =
@@ -20,6 +18,8 @@ const PaymentTypeSelector = ({
   value,
   onChange,
   roomLabel,
+  roomFee,
+  exemptionFee,
 }: PaymentTypeSelectorProps) => (
   <RadioGroup
     value={value}
@@ -29,7 +29,9 @@ const PaymentTypeSelector = ({
     <Label htmlFor="type-room-fee" className={optionClassName}>
       <RadioGroupItem id="type-room-fee" value="room_fee" className="mt-0.5" />
       <span className="space-y-1">
-        <span className="block font-semibold text-foreground">Room fee</span>
+        <span className="block font-semibold text-foreground">
+          Room fee{roomFee !== null ? ` · ${formatNaira(roomFee)}` : ""}
+        </span>
         <span className="block text-sm font-normal text-muted-foreground">
           {roomLabel ? (
             roomLabel
@@ -56,7 +58,8 @@ const PaymentTypeSelector = ({
       />
       <span className="space-y-1">
         <span className="block font-semibold text-foreground">
-          Room exemption · {formatNaira(ROOM_EXEMPTION_FEE)}
+          Room exemption
+          {exemptionFee !== null ? ` · ${formatNaira(exemptionFee)}` : ""}
         </span>
         <span className="block text-sm font-normal text-muted-foreground">
           Fixed fee to be exempted from hostel accommodation

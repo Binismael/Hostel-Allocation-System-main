@@ -16,7 +16,7 @@ interface RoomPreviewCardProps {
 
 const RoomPreviewCard = ({ room, category }: RoomPreviewCardProps) => {
   const photos = ROOM_PHOTOS[category];
-  const isFull = room.status === "filled";
+  const isFull = room.status === "filled" || room.status === "occupied";
 
   return (
     <article className="rounded-lg border border-border bg-background p-3">

@@ -3,6 +3,7 @@ import { Building2, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { RoomCategory } from "@/lib/hostel-directory";
+import { formatNaira } from "@/lib/payments";
 import AmenityList from "./AmenityList";
 import RoomPreviewCard from "./RoomPreviewCard";
 
@@ -12,6 +13,7 @@ interface HostelCategoryCardProps {
   rooms: any[];
   preference: string | null;
   isAllocated: boolean;
+  fee: number | null;
 }
 
 const HostelCategoryCard = ({
@@ -20,6 +22,7 @@ const HostelCategoryCard = ({
   rooms,
   preference,
   isAllocated,
+  fee,
 }: HostelCategoryCardProps) => {
   const totalCapacity = rooms.reduce((sum, r) => sum + (r.capacity || 0), 0);
   const Icon = category === "premium" ? Star : Building2;
@@ -58,7 +61,7 @@ const HostelCategoryCard = ({
         </div>
       </div>
 
-      <dl className="my-4 grid grid-cols-2 gap-4 border-y border-gray-200 py-4">
+      <dl className="my-4 grid grid-cols-3 gap-4 border-y border-gray-200 py-4">
         <div>
           <dt className="text-xs text-muted-foreground">Rooms</dt>
           <dd className="text-2xl font-bold text-foreground">{rooms.length}</dd>
@@ -67,6 +70,12 @@ const HostelCategoryCard = ({
           <dt className="text-xs text-muted-foreground">Total capacity</dt>
           <dd className="text-2xl font-bold text-foreground">
             {totalCapacity}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Fee per student</dt>
+          <dd className="text-2xl font-bold text-foreground">
+            {fee !== null ? formatNaira(fee) : "—"}
           </dd>
         </div>
       </dl>

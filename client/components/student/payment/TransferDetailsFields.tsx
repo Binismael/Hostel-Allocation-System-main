@@ -3,21 +3,24 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   formatNaira,
-  ROOM_EXEMPTION_FEE,
-  type PaymentType,
+  RECEIPT_TYPES,
   type TransferDetails,
 } from "@/lib/payments";
 
 interface TransferDetailsFieldsProps {
-  type: PaymentType;
+  amount: number | null;
   value: TransferDetails;
   onChange: (value: TransferDetails) => void;
+  receipt: File | null;
+  onReceiptChange: (file: File | null) => void;
 }
 
 const TransferDetailsFields = ({
-  type,
+  amount,
   value,
   onChange,
+  receipt,
+  onReceiptChange,
 }: TransferDetailsFieldsProps) => {
   const update =
     (field: keyof TransferDetails) =>
@@ -68,26 +71,14 @@ const TransferDetailsFields = ({
         </legend>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="pay-amount">Amount (₦) *</Label>
-            {type === "room_exemption" ? (
-              <Input
-                id="pay-amount"
-                value={formatNaira(ROOM_EXEMPTION_FEE)}
-                readOnly
-                aria-readonly="true"
-                className="bg-muted"
-              />
-            ) : (
-              <Input
-                id="pay-amount"
-                type="number"
-                inputMode="decimal"
-                min={1}
-                value={value.amount}
-                onChange={update("amount")}
-                required
-              />
-            )}
+            <Label htmlFor="pay-amount">Amount</Label>
+            <Input
+              id="pay-amount"
+              value={amount !== null ? formatNaira(amount) : "—"}
+              readOnly
+              aria-readonly="true"
+              className="bg-muted"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="pay-date">Transfer date *</Label>
@@ -137,6 +128,22 @@ const TransferDetailsFields = ({
               onChange={update("referenceId")}
               required
             />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="pay-receipt">Transfer receipt *</Label>
+            <Input
+              id="pay-receipt"
+              type="file"
+              accept={RECEIPT_TYPES.join(",")}
+              onChange={(e) => onReceiptChange(e.target.files?.[0] ?? null)}
+              aria-describedby="pay-receipt-hint"
+              required
+            />
+            <p id="pay-receipt-hint" className="text-xs text-muted-foreground">
+              {receipt
+                ? `Selected: ${receipt.name}`
+                : "JPG, PNG, or PDF, up to 5 MB"}
+            </p>
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="pay-remarks">Remarks</Label>

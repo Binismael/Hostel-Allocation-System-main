@@ -2,7 +2,18 @@ import { supabase } from "./supabase";
 
 export type PaymentType = "room_fee" | "room_exemption";
 
-export const ROOM_EXEMPTION_FEE = 20000;
+export const EXEMPTION_TIER_CODE = "room_exemption";
+export const RECEIPT_BUCKET = "payment-receipts";
+export const MAX_RECEIPT_BYTES = 5 * 1024 * 1024;
+export const RECEIPT_TYPES = ["image/jpeg", "image/png", "application/pdf"];
+
+export interface FeeTier {
+  id: string;
+  code: string;
+  name: string;
+  amount: number;
+  eligible_room_categories: string[];
+}
 
 export const HOSTEL_ACCOUNT = {
   accountNumber: import.meta.env.VITE_HOSTEL_ACCOUNT_NUMBER ?? "",
@@ -11,7 +22,6 @@ export const HOSTEL_ACCOUNT = {
 };
 
 export interface TransferDetails {
-  amount: string;
   payerName: string;
   payerBank: string;
   recipientAccountNumber: string;
@@ -23,7 +33,6 @@ export interface TransferDetails {
 }
 
 export const emptyTransferDetails = (): TransferDetails => ({
-  amount: "",
   payerName: "",
   payerBank: "",
   recipientAccountNumber: HOSTEL_ACCOUNT.accountNumber,
@@ -41,17 +50,34 @@ export const formatNaira = (amount: number) =>
     maximumFractionDigits: 0,
   }).format(amount);
 
+export async function getFeeTiers() {
+  const { data, error } = await supabase
+    .from("hostel_fee_tiers")
+    .select("id, code, name, amount, eligible_room_categories")
+    .eq("is_active", true);
+  return { data: (data ?? []) as FeeTier[], error };
+}
+
+export function findTier(
+  tiers: FeeTier[],
+  type: PaymentType,
+  roomCategory?: string | null,
+) {
+  if (type === "room_exemption") {
+    return tiers.find((t) => t.code === EXEMPTION_TIER_CODE);
+  }
+  const category = roomCategory || "standard";
+  return tiers.find((t) => t.eligible_room_categories.includes(category));
+}
+
 export function validateTransfer(
   type: PaymentType,
   roomId: string,
   details: TransferDetails,
+  receipt: File | null,
 ): string | null {
   if (type === "room_fee" && !roomId) {
     return "Choose a room from the Hostel Directory before paying the room fee";
-  }
-  const amount = Number(details.amount);
-  if (type === "room_fee" && (!Number.isFinite(amount) || amount <= 0)) {
-    return "Enter the amount you transferred";
   }
   if (!details.payerName.trim() || !details.payerBank.trim()) {
     return "Enter the sender's name and bank";
@@ -68,6 +94,15 @@ export function validateTransfer(
   if (!details.transferDate) {
     return "Enter the transfer date";
   }
+  if (!receipt) {
+    return "Upload your transfer receipt";
+  }
+  if (!RECEIPT_TYPES.includes(receipt.type)) {
+    return "Receipt must be a JPG, PNG, or PDF file";
+  }
+  if (receipt.size > MAX_RECEIPT_BYTES) {
+    return "Receipt must be 5 MB or smaller";
+  }
   return null;
 }
 
@@ -82,31 +117,67 @@ export async function verifyAuthorizationCode(email: string, token: string) {
   return supabase.auth.verifyOtp({ email, token, type: "email" });
 }
 
-export async function submitPayment(params: {
+export async function submitBankTransfer(params: {
   studentId: string;
-  email: string;
-  roomId: string;
-  type: PaymentType;
+  tierCode: string;
+  roomId: string | null;
   details: TransferDetails;
+  receipt: File;
 }) {
-  const { studentId, email, roomId, type, details } = params;
-  return supabase.from("payments").insert([
-    {
-      student_id: studentId,
-      room_id: type === "room_fee" ? roomId : null,
-      payment_type: type,
-      amount:
-        type === "room_exemption" ? ROOM_EXEMPTION_FEE : Number(details.amount),
-      payer_name: details.payerName.trim(),
-      payer_bank: details.payerBank.trim(),
-      recipient_account_number: details.recipientAccountNumber.trim(),
-      recipient_account_name: details.recipientAccountName.trim(),
-      session_id: details.sessionId.trim(),
-      reference_id: details.referenceId.trim(),
-      transfer_date: details.transferDate,
-      remarks: details.remarks.trim() || null,
-      authorized_email: email,
-      status: "pending",
-    },
-  ]);
+  const { studentId, tierCode, roomId, details, receipt } = params;
+  const paymentId = crypto.randomUUID();
+  const extension = receipt.name.split(".").pop()?.toLowerCase() || "file";
+  const receiptPath = `student/${studentId}/${paymentId}.${extension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(RECEIPT_BUCKET)
+    .upload(receiptPath, receipt, { contentType: receipt.type });
+  if (uploadError) {
+    return {
+      data: null,
+      error: {
+        message: "Could not upload your receipt. Please try again.",
+        expired: false,
+      },
+    };
+  }
+
+  const { data, error } = await supabase.rpc("submit_bank_transfer_payment", {
+    p_payment_id: paymentId,
+    p_fee_tier_code: tierCode,
+    p_room_id: roomId,
+    p_bank_reference: details.referenceId.trim(),
+    p_session_id: details.sessionId.trim(),
+    p_recipient_account_number: details.recipientAccountNumber.trim(),
+    p_recipient_account_name: details.recipientAccountName.trim(),
+    p_payer_name: details.payerName.trim(),
+    p_payer_bank: details.payerBank.trim(),
+    p_remarks: details.remarks.trim(),
+    p_paid_at: details.transferDate,
+    p_receipt_path: receiptPath,
+  });
+
+  if (error) return { data: null, error: describeSubmitError(error) };
+  const row = Array.isArray(data) ? data[0] : data;
+  return { data: row as { payment_reference: string }, error: null };
+}
+
+function describeSubmitError(error: { code?: string; message?: string }) {
+  const message = error.message ?? "";
+  if (message.includes("hostel_payments_open_bank_reference")) {
+    return { message: "This reference ID has already been submitted.", expired: false };
+  }
+  if (message.includes("hostel_payments_one_open_submission")) {
+    return {
+      message: "You already have a payment awaiting review or verified.",
+      expired: false,
+    };
+  }
+  if (message.startsWith("Email authorization required")) {
+    return {
+      message: "Your email authorization has expired. Send a new code and try again.",
+      expired: true,
+    };
+  }
+  return { message: message || "Could not submit your payment.", expired: false };
 }

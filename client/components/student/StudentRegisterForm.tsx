@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AlertCircle, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
-import { createStudent } from "@/lib/supabase-db";
+import { upsertStudent } from "@/lib/supabase-db";
 import {
   emptyCredentials,
   emptyStudentDetails,
@@ -45,7 +45,11 @@ const StudentRegisterForm = ({
         email,
         password: credentials.password,
         options: {
-          data: { role: "student", student_details: studentRecord },
+          data: {
+            role: "student",
+            full_name: studentRecord.name,
+            student_details: studentRecord,
+          },
         },
       });
 
@@ -65,7 +69,7 @@ const StudentRegisterForm = ({
         return;
       }
 
-      const { error: studentError } = await createStudent({
+      const { error: studentError } = await upsertStudent({
         id: data.user.id,
         student_id: generateStudentId(data.user.id),
         ...studentRecord,

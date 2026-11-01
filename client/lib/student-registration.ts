@@ -71,6 +71,29 @@ export function generateStudentId(userId?: string) {
   return `STU-${suffix.toUpperCase()}`;
 }
 
+const PROFILE_FIELDS = [
+  "name",
+  "phone",
+  "gender",
+  "date_of_birth",
+  "program",
+  "semester",
+  "nationality",
+  "address",
+  "emergency_contact",
+  "emergency_phone",
+] as const;
+
+export function pickProfileFields(source: Record<string, unknown> | null | undefined) {
+  if (!source) return {};
+  return Object.fromEntries(
+    PROFILE_FIELDS.filter((key) => source[key] !== undefined).map((key) => [
+      key,
+      source[key],
+    ]),
+  );
+}
+
 export function toStudentRecord(details: StudentDetails, email: string) {
   return {
     name: details.name.trim(),
