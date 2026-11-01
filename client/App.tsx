@@ -40,6 +40,8 @@ import StudentAllocationStatus from "./pages/student/AllocationStatus";
 import StudentAllocationLetter from "./pages/student/AllocationLetter";
 import StudentRoomRequest from "./pages/student/RoomRequest";
 import StudentProfile from "./pages/student/Profile";
+import StudentHostelDirectory from "./pages/student/HostelDirectory";
+import StudentPayment from "./pages/student/Payment";
 
 const queryClient = new QueryClient();
 
@@ -232,6 +234,22 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="student">
                   <StudentRoomRequest />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/hostel-directory"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentHostelDirectory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/payment"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentPayment />
                 </ProtectedRoute>
               }
             />

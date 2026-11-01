@@ -103,6 +103,15 @@
   zoom: 0.75;
 }
 
+/* Zoom also scales vh units, so full-height layouts need compensating. */
+#root .h-screen {
+  height: calc(100vh / 0.75);
+}
+
+#root .min-h-screen {
+  min-height: calc(100vh / 0.75);
+}
+
 @layer base {
   * {
     @apply border-border;

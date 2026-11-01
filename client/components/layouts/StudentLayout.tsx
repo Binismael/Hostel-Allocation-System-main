@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FileText, User, DoorOpen, LogOut, Menu, X, File } from "lucide-react";
+import {
+  FileText,
+  User,
+  DoorOpen,
+  LogOut,
+  Menu,
+  X,
+  File,
+  Building2,
+  CreditCard,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface StudentLayoutProps {
@@ -26,6 +36,16 @@ const StudentLayout = ({ children }: StudentLayoutProps) => {
       label: "Room Request",
       href: "/student/room-request",
       icon: DoorOpen,
+    },
+    {
+      label: "Hostel Directory",
+      href: "/student/hostel-directory",
+      icon: Building2,
+    },
+    {
+      label: "Payment",
+      href: "/student/payment",
+      icon: CreditCard,
     },
     {
       label: "My Profile",
