@@ -78,7 +78,7 @@ const StudentLogin = () => {
         description: "Logged in successfully!",
       });
 
-      navigate("/student/room-request");
+      navigate("/student/hostel-directory");
     } catch (err) {
       console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "An error occurred");

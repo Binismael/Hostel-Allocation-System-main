@@ -39,7 +39,6 @@ import ViewStudentDetails from "./pages/admin/ViewStudentDetails";
 import StudentLogin from "./pages/student/Login";
 import StudentAllocationStatus from "./pages/student/AllocationStatus";
 import StudentAllocationLetter from "./pages/student/AllocationLetter";
-import StudentRoomRequest from "./pages/student/RoomRequest";
 import StudentProfile from "./pages/student/Profile";
 import StudentHostelDirectory from "./pages/student/HostelDirectory";
 import StudentPayment from "./pages/student/Payment";
@@ -246,11 +245,7 @@ const App = () => (
             />
             <Route
               path="/student/room-request"
-              element={
-                <ProtectedRoute requiredRole="student">
-                  <StudentRoomRequest />
-                </ProtectedRoute>
-              }
+              element={<Navigate to="/student/hostel-directory" replace />}
             />
             <Route
               path="/student/hostel-directory"

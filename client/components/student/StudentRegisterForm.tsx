@@ -81,7 +81,7 @@ const StudentRegisterForm = ({
         return;
       }
 
-      navigate("/student/room-request");
+      navigate("/student/hostel-directory");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {

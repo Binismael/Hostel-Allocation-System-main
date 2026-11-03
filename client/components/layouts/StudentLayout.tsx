@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FileText,
   User,
-  DoorOpen,
   LogOut,
   Menu,
   X,
@@ -59,11 +58,6 @@ const StudentLayout = ({ children }: StudentLayoutProps) => {
       label: "Allocation Letter",
       href: "/student/allocation-letter",
       icon: File,
-    },
-    {
-      label: "Room Request",
-      href: "/student/room-request",
-      icon: DoorOpen,
     },
     {
       label: "Hostel Directory",

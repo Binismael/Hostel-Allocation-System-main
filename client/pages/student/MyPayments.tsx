@@ -69,9 +69,13 @@ const PaymentCard = ({ payment }: { payment: MyPayment }) => {
         </p>
       )}
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" className="gap-1" onClick={openReceipt}>
-          Receipt <ExternalLink className="h-3.5 w-3.5" />
-        </Button>
+        {payment.receipt_path.startsWith("paystack:") ? (
+          <span className="self-center text-sm text-muted-foreground">Paid online with Paystack</span>
+        ) : (
+          <Button size="sm" variant="outline" className="gap-1" onClick={openReceipt}>
+            Receipt <ExternalLink className="h-3.5 w-3.5" />
+          </Button>
+        )}
         {events === null && (
           <Button size="sm" variant="ghost" onClick={showHistory}>
             Show history

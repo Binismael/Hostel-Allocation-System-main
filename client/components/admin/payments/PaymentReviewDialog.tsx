@@ -51,13 +51,14 @@ const PaymentReviewDialog = ({ payment, onClose, onReviewed }: Props) => {
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [working, setWorking] = useState<"verified" | "rejected" | null>(null);
+  const isPaystack = !!payment?.receipt_path.startsWith("paystack:");
 
   useEffect(() => {
     if (!payment) return;
     setNotes("");
     setReceiptUrl(null);
     listPaymentEvents(payment.id).then(({ data }) => setEvents(data));
-    getReceiptUrl(payment.receipt_path).then(({ url }) => setReceiptUrl(url));
+    if (!isPaystack) getReceiptUrl(payment.receipt_path).then(({ url }) => setReceiptUrl(url));
   }, [payment]);
 
   const decide = async (decision: "verified" | "rejected") => {
@@ -104,7 +105,11 @@ const PaymentReviewDialog = ({ payment, onClose, onReviewed }: Props) => {
               <div className="space-y-4">
                 <div>
                   <h4 className="mb-2 text-sm font-semibold text-foreground">Receipt</h4>
-                  {receiptUrl ? (
+                  {isPaystack ? (
+                    <p className="text-sm text-muted-foreground">
+                      Paid online with Paystack — confirmed automatically, no receipt needed.
+                    </p>
+                  ) : receiptUrl ? (
                     <a href={receiptUrl} target="_blank" rel="noreferrer" className="block">
                       {isImage ? (
                         <img
