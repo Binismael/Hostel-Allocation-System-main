@@ -19,7 +19,6 @@ import {
 } from "@/lib/payments";
 import PaymentTypeSelector from "@/components/student/payment/PaymentTypeSelector";
 import TransferDetailsFields from "@/components/student/payment/TransferDetailsFields";
-import EmailAuthorization from "@/components/student/payment/EmailAuthorization";
 import PaymentMethodSelector from "@/components/student/payment/PaymentMethodSelector";
 import { getSettings, type Settings } from "@/lib/settings";
 import {
@@ -43,7 +42,6 @@ const Payment = () => {
   );
   const [details, setDetails] = useState(emptyTransferDetails);
   const [receipt, setReceipt] = useState<File | null>(null);
-  const [authorized, setAuthorized] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submittedReference, setSubmittedReference] = useState("");
@@ -150,10 +148,6 @@ const Payment = () => {
       setError("This fee is not available right now. Please contact the hostel office.");
       return;
     }
-    if (!authorized) {
-      setError("Authorize this payment with the code sent to your email");
-      return;
-    }
     if (!studentId) {
       setError("Your student profile could not be found. Please log in again.");
       return;
@@ -171,7 +165,6 @@ const Payment = () => {
     setSubmitting(false);
 
     if (submitError) {
-      if (submitError.expired) setAuthorized(false);
       setError(submitError.message);
       return;
     }
@@ -298,31 +291,13 @@ const Payment = () => {
                 securely on Paystack. Don&apos;t close the window until you see the confirmation.
               </p>
             ) : (
-              <>
-                <TransferDetailsFields
-                  amount={selectedTier?.amount ?? null}
-                  value={details}
-                  onChange={setDetails}
-                  receipt={receipt}
-                  onReceiptChange={setReceipt}
-                />
-
-                <section className="space-y-3" aria-labelledby="pay-auth-heading">
-                  <h3
-                    id="pay-auth-heading"
-                    className="text-base font-semibold text-foreground"
-                  >
-                    Email authorization
-                  </h3>
-                  {user?.email && (
-                    <EmailAuthorization
-                      email={user.email}
-                      verified={authorized}
-                      onVerified={() => setAuthorized(true)}
-                    />
-                  )}
-                </section>
-              </>
+              <TransferDetailsFields
+                amount={selectedTier?.amount ?? null}
+                value={details}
+                onChange={setDetails}
+                receipt={receipt}
+                onReceiptChange={setReceipt}
+              />
             )}
 
             {error && (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -12,10 +12,13 @@ import {
   LogOut,
   CreditCard,
   ClipboardList,
+  ShieldCheck,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { signOut, supabase } from "@/lib/supabase";
+import { signOut } from "@/lib/supabase";
+import { canAccess, useAdminProfile, type Permission } from "@/lib/admin-access";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -26,24 +29,17 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [adminName, setAdminName] = useState("");
-
-  useEffect(() => {
-    if (!user?.id) return;
-    supabase
-      .from("admins")
-      .select("name")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => setAdminName(data?.name ?? ""));
-  }, [user?.id]);
+  const { admin } = useAdminProfile();
+  const queryClient = useQueryClient();
+  const adminName = admin?.name ?? "";
 
   const handleLogout = async () => {
     await signOut();
+    queryClient.removeQueries({ queryKey: ["admin-profile"] });
     navigate("/admin/login");
   };
 
-  const sidebarItems = [
+  const allItems: { label: string; href: string; icon: typeof Users; permission?: Permission }[] = [
     {
       label: "Dashboard",
       href: "/admin/dashboard",
@@ -53,43 +49,59 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       label: "Students",
       href: "/admin/students",
       icon: Users,
+      permission: "students",
     },
     {
       label: "Rooms",
       href: "/admin/rooms",
       icon: DoorOpen,
+      permission: "rooms",
     },
     {
       label: "Occupied Rooms",
       href: "/admin/occupied-rooms",
       icon: DoorOpen,
+      permission: "rooms",
     },
     {
       label: "Payments",
       href: "/admin/payments",
       icon: CreditCard,
+      permission: "payments",
     },
     {
       label: "Room Requests",
       href: "/admin/room-requests",
       icon: ClipboardList,
+      permission: "room_requests",
     },
     {
       label: "Allocations",
       href: "/admin/allocations",
       icon: FileText,
+      permission: "allocations",
     },
     {
       label: "Hostel Blocks",
       href: "/admin/blocks",
       icon: Building2,
+      permission: "rooms",
     },
     {
       label: "Settings",
       href: "/admin/settings",
       icon: Settings,
+      permission: "settings",
+    },
+    {
+      label: "Admins",
+      href: "/admin/admins",
+      icon: ShieldCheck,
+      permission: "admins",
     },
   ];
+
+  const sidebarItems = allItems.filter((item) => canAccess(admin, item.permission));
 
   const isActive = (href: string) => location.pathname === href;
 
@@ -186,7 +198,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               </div>
               <div className="hidden sm:block">
                 <p className="text-sm font-medium text-white">{adminName || "Admin"}</p>
-                <p className="text-xs text-white/70">{user?.email ?? "Administrator"}</p>
+                <p className="text-xs text-white/70">
+                  {admin?.role === "super_admin" ? "Super admin" : "Admin"} · {user?.email}
+                </p>
               </div>
             </div>
           </div>

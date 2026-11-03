@@ -4,6 +4,7 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handleSearchUser } from "./routes/search-user";
 import { handlePaystackVerify } from "./routes/paystack";
+import { handleCreateAdmin } from "./routes/admins";
 
 export function createServer() {
   const app = express();
@@ -22,6 +23,7 @@ export function createServer() {
   app.get("/api/demo", handleDemo);
   app.get("/api/search-user", handleSearchUser);
   app.post("/api/paystack/verify", handlePaystackVerify);
+  app.post("/api/admins", handleCreateAdmin);
 
   return app;
 }

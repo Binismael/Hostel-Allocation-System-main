@@ -26,7 +26,7 @@ const PaymentDetailsList = ({ payment }: { payment: AdminPayment }) => {
       />
       <Row label="Session ID" value={payment.session_id} />
       <Row label="Reference ID" value={payment.bank_reference} />
-      <Row label="Authorized by" value={payment.authorized_email} />
+      <Row label="Student email" value={payment.authorized_email} />
       <Row label="Remarks" value={payment.remarks} />
       {payment.rejection_reason && <Row label="Rejection reason" value={payment.rejection_reason} />}
     </dl>

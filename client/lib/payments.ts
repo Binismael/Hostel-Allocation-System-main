@@ -106,17 +106,6 @@ export function validateTransfer(
   return null;
 }
 
-export async function sendAuthorizationCode(email: string) {
-  return supabase.auth.signInWithOtp({
-    email,
-    options: { shouldCreateUser: false },
-  });
-}
-
-export async function verifyAuthorizationCode(email: string, token: string) {
-  return supabase.auth.verifyOtp({ email, token, type: "email" });
-}
-
 export async function submitBankTransfer(params: {
   studentId: string;
   tierCode: string;
@@ -135,10 +124,7 @@ export async function submitBankTransfer(params: {
   if (uploadError) {
     return {
       data: null,
-      error: {
-        message: "Could not upload your receipt. Please try again.",
-        expired: false,
-      },
+      error: { message: "Could not upload your receipt. Please try again." },
     };
   }
 
@@ -165,19 +151,10 @@ export async function submitBankTransfer(params: {
 function describeSubmitError(error: { code?: string; message?: string }) {
   const message = error.message ?? "";
   if (message.includes("hostel_payments_open_bank_reference")) {
-    return { message: "This reference ID has already been submitted.", expired: false };
+    return { message: "This reference ID has already been submitted." };
   }
   if (message.includes("hostel_payments_one_open_submission")) {
-    return {
-      message: "You already have a payment awaiting review or verified.",
-      expired: false,
-    };
+    return { message: "You already have a payment awaiting review or verified." };
   }
-  if (message.startsWith("Email authorization required")) {
-    return {
-      message: "Your email authorization has expired. Send a new code and try again.",
-      expired: true,
-    };
-  }
-  return { message: message || "Could not submit your payment.", expired: false };
+  return { message: message || "Could not submit your payment." };
 }
