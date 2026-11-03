@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import type { RequestHandler } from "express";
 import { createClient } from "@supabase/supabase-js";
 
 export const handleSearchUser: RequestHandler = async (req, res) => {

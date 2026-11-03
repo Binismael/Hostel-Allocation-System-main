@@ -1,8 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { handleDemo } from "./routes/demo";
-import { handleSearchUser } from "./routes/search-user";
+import { handleDemo } from "./routes/demo.js";
+import { handleSearchUser } from "./routes/search-user.js";
 
 export function createServer() {
   const app = express();
