@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogIn, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { createAdmin, getAdminByEmail } from "@/lib/supabase-db";
 import { useToast } from "@/components/ui/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,58 +30,28 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      // Attempt login
       const { data: signInData, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        await supabase.auth.signInWithPassword({ email, password });
 
-      let user = signInData?.user;
-
-      // If login fails, try signup (register new admin)
-      if (signInError) {
-        const { data: signUpData, error: signUpError } =
-          await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: { role: "admin" },
-            },
-          });
-
-        if (signUpError) {
-          setError(signUpError.message || "Authentication failed");
-          setLoading(false);
-          return;
-        }
-
-        user = signUpData.user;
-
-        toast({
-          title: "Account created",
-          description: "Admin account registered successfully.",
-        });
-      }
-
-      if (!user?.id) {
-        setError("Authentication failed");
-        setLoading(false);
+      if (signInError || !signInData.user) {
+        setError("Incorrect email or password");
         return;
       }
 
-      // Check if admin record exists
-      const { data: existingAdmin } = await getAdminByEmail(email);
+      const { data: adminRecord } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", signInData.user.id)
+        .eq("is_active", true)
+        .maybeSingle();
 
-      if (!existingAdmin) {
-        // Create admin record
-        await createAdmin({
-          id: user.id,
-          email,
-          name: email.split("@")[0],
-          created_at: new Date(),
-        });
+      if (!adminRecord) {
+        await supabase.auth.signOut();
+        setError("This account does not have admin access. Ask a super admin to add you.");
+        return;
       }
+
+      await queryClient.invalidateQueries({ queryKey: ["admin-profile"] });
 
       toast({
         title: "Success",

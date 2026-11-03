@@ -1,7 +1,22 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { FileText, User, DoorOpen, LogOut, Menu, X, File } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  FileText,
+  User,
+  LogOut,
+  Menu,
+  X,
+  File,
+  Building2,
+  CreditCard,
+  Receipt,
+  Bell,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { signOut } from "@/lib/supabase";
+import { getStudent } from "@/lib/supabase-db";
+import { countUnread } from "@/lib/notifications";
 
 interface StudentLayoutProps {
   children: React.ReactNode;
@@ -10,6 +25,28 @@ interface StudentLayoutProps {
 const StudentLayout = ({ children }: StudentLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<{ name: string; student_id: string } | null>(null);
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    getStudent(user.id).then(({ data }) => setProfile(data));
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const refresh = () => countUnread(user.id).then(setUnread);
+    refresh();
+    window.addEventListener("notifications-changed", refresh);
+    return () => window.removeEventListener("notifications-changed", refresh);
+  }, [user?.id, location.pathname]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/student/login");
+  };
 
   const navItems = [
     {
@@ -23,9 +60,25 @@ const StudentLayout = ({ children }: StudentLayoutProps) => {
       icon: File,
     },
     {
-      label: "Room Request",
-      href: "/student/room-request",
-      icon: DoorOpen,
+      label: "Hostel Directory",
+      href: "/student/hostel-directory",
+      icon: Building2,
+    },
+    {
+      label: "Payment",
+      href: "/student/payment",
+      icon: CreditCard,
+    },
+    {
+      label: "My Payments",
+      href: "/student/payments",
+      icon: Receipt,
+    },
+    {
+      label: "Notifications",
+      href: "/student/notifications",
+      icon: Bell,
+      badge: unread,
     },
     {
       label: "My Profile",
@@ -74,9 +127,19 @@ const StudentLayout = ({ children }: StudentLayoutProps) => {
                     : "text-sidebar-foreground hover:bg-sidebar-accent"
                 }`}
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
+                <span className="relative">
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  {!sidebarOpen && !!item.badge && (
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
+                  )}
+                </span>
                 {sidebarOpen && (
                   <span className="text-sm font-medium">{item.label}</span>
+                )}
+                {sidebarOpen && !!item.badge && (
+                  <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+                    {item.badge}
+                  </span>
                 )}
               </Link>
             );
@@ -89,7 +152,7 @@ const StudentLayout = ({ children }: StudentLayoutProps) => {
             variant="outline"
             size="sm"
             className="w-full justify-start"
-            onClick={() => (window.location.href = "/student/login")}
+            onClick={handleLogout}
           >
             <LogOut className="w-4 h-4 mr-2" />
             {sidebarOpen && <span>Logout</span>}
@@ -121,11 +184,15 @@ const StudentLayout = ({ children }: StudentLayoutProps) => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <span className="text-sm font-semibold text-white">S</span>
+                <span className="text-sm font-semibold text-white">
+                  {(profile?.name || user?.email || "S").charAt(0).toUpperCase()}
+                </span>
               </div>
               <div className="hidden sm:block">
-                <p className="text-sm font-medium text-white">Student</p>
-                <p className="text-xs text-white/70">STU-001</p>
+                <p className="text-sm font-medium text-white">
+                  {profile?.name || user?.email || "Student"}
+                </p>
+                <p className="text-xs text-white/70">{profile?.student_id ?? ""}</p>
               </div>
             </div>
           </div>

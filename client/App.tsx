@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 
 // Pages
@@ -24,7 +24,9 @@ import AdminSettings from "./pages/admin/Settings";
 import AddStudent from "./pages/admin/AddStudent";
 import AddExistingStudent from "./pages/admin/AddExistingStudent";
 import AddRoom from "./pages/admin/AddRoom";
-import AddAllocation from "./pages/admin/AddAllocation";
+import AdminPayments from "./pages/admin/Payments";
+import AdminRoomRequests from "./pages/admin/RoomRequests";
+import AdminAdmins from "./pages/admin/Admins";
 import EditAllocation from "./pages/admin/EditAllocation";
 import ViewAllocationDetails from "./pages/admin/ViewAllocationDetails";
 import AddBlock from "./pages/admin/AddBlock";
@@ -38,8 +40,11 @@ import ViewStudentDetails from "./pages/admin/ViewStudentDetails";
 import StudentLogin from "./pages/student/Login";
 import StudentAllocationStatus from "./pages/student/AllocationStatus";
 import StudentAllocationLetter from "./pages/student/AllocationLetter";
-import StudentRoomRequest from "./pages/student/RoomRequest";
 import StudentProfile from "./pages/student/Profile";
+import StudentHostelDirectory from "./pages/student/HostelDirectory";
+import StudentPayment from "./pages/student/Payment";
+import StudentMyPayments from "./pages/student/MyPayments";
+import StudentNotifications from "./pages/student/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -67,7 +72,7 @@ const App = () => (
             <Route
               path="/admin/students"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="students">
                   <AdminStudents />
                 </ProtectedRoute>
               }
@@ -75,7 +80,7 @@ const App = () => (
             <Route
               path="/admin/students/add"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="students">
                   <AddStudent />
                 </ProtectedRoute>
               }
@@ -83,7 +88,7 @@ const App = () => (
             <Route
               path="/admin/students/add-existing"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="students">
                   <AddExistingStudent />
                 </ProtectedRoute>
               }
@@ -91,7 +96,7 @@ const App = () => (
             <Route
               path="/admin/students/edit/:studentId"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="students">
                   <EditStudent />
                 </ProtectedRoute>
               }
@@ -99,7 +104,7 @@ const App = () => (
             <Route
               path="/admin/students/view/:studentId"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="students">
                   <ViewStudentDetails />
                 </ProtectedRoute>
               }
@@ -107,7 +112,7 @@ const App = () => (
             <Route
               path="/admin/rooms"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="rooms">
                   <AdminRooms />
                 </ProtectedRoute>
               }
@@ -115,7 +120,7 @@ const App = () => (
             <Route
               path="/admin/rooms/add"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="rooms">
                   <AddRoom />
                 </ProtectedRoute>
               }
@@ -123,7 +128,7 @@ const App = () => (
             <Route
               path="/admin/rooms/edit/:roomId"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="rooms">
                   <EditRoom />
                 </ProtectedRoute>
               }
@@ -131,7 +136,7 @@ const App = () => (
             <Route
               path="/admin/occupied-rooms"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="rooms">
                   <OccupiedRooms />
                 </ProtectedRoute>
               }
@@ -139,23 +144,35 @@ const App = () => (
             <Route
               path="/admin/allocations"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="allocations">
                   <AdminAllocations />
                 </ProtectedRoute>
               }
             />
             <Route
               path="/admin/allocations/add"
+              element={<Navigate to="/admin/allocations?filter=awaiting" replace />}
+            />
+            <Route
+              path="/admin/payments"
               element={
-                <ProtectedRoute requiredRole="admin">
-                  <AddAllocation />
+                <ProtectedRoute requiredRole="admin" permission="payments">
+                  <AdminPayments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/room-requests"
+              element={
+                <ProtectedRoute requiredRole="admin" permission="room_requests">
+                  <AdminRoomRequests />
                 </ProtectedRoute>
               }
             />
             <Route
               path="/admin/allocations/edit/:allocationId"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="allocations">
                   <EditAllocation />
                 </ProtectedRoute>
               }
@@ -163,7 +180,7 @@ const App = () => (
             <Route
               path="/admin/allocations/view/:allocationId"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="allocations">
                   <ViewAllocationDetails />
                 </ProtectedRoute>
               }
@@ -171,7 +188,7 @@ const App = () => (
             <Route
               path="/admin/blocks"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="rooms">
                   <AdminBlocks />
                 </ProtectedRoute>
               }
@@ -179,7 +196,7 @@ const App = () => (
             <Route
               path="/admin/blocks/add"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="rooms">
                   <AddBlock />
                 </ProtectedRoute>
               }
@@ -187,7 +204,7 @@ const App = () => (
             <Route
               path="/admin/blocks/edit/:blockId"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="rooms">
                   <EditBlock />
                 </ProtectedRoute>
               }
@@ -195,7 +212,7 @@ const App = () => (
             <Route
               path="/admin/blocks/view/:blockId"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="rooms">
                   <ViewBlockDetails />
                 </ProtectedRoute>
               }
@@ -203,8 +220,17 @@ const App = () => (
             <Route
               path="/admin/settings"
               element={
-                <ProtectedRoute requiredRole="admin">
+                <ProtectedRoute requiredRole="admin" permission="settings">
                   <AdminSettings />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/admins"
+              element={
+                <ProtectedRoute requiredRole="admin" permission="admins">
+                  <AdminAdmins />
                 </ProtectedRoute>
               }
             />
@@ -229,9 +255,37 @@ const App = () => (
             />
             <Route
               path="/student/room-request"
+              element={<Navigate to="/student/hostel-directory" replace />}
+            />
+            <Route
+              path="/student/hostel-directory"
               element={
                 <ProtectedRoute requiredRole="student">
-                  <StudentRoomRequest />
+                  <StudentHostelDirectory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/payment"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentPayment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/payments"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentMyPayments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student/notifications"
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <StudentNotifications />
                 </ProtectedRoute>
               }
             />

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -8,6 +9,8 @@ import {
   BarChart3,
   Lock,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle,
   Zap,
   Shield,
@@ -16,6 +19,202 @@ import {
   Award,
   Lightbulb,
 } from "lucide-react";
+
+const hostels = [
+  {
+    name: "New Hostel",
+    details: "8 self-contained rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fcae20b7dac8c49499afb0afe05f82caf?format=webp&width=800&height=1200",
+        alt: "Courtyard view of the New Hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F3b19b85cf179429084fc57f4baba27e1?format=webp&width=800&height=1200",
+        alt: "Front view of the New Hostel rooms",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fb15d231eaf2c4bd3b6ee1ca7109c1777?format=webp&width=800&height=1200",
+        alt: "Side view of the New Hostel",
+      },
+    ],
+  },
+  {
+    name: "Police Hostel",
+    details: "14 rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fe9d8661cbb6349afa8544e6dac62eba4?format=webp&width=800&height=1200",
+        alt: "Front view of the Police Hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Ff7b5849983bc4791a9aa4eec589fb9cd?format=webp&width=800&height=1200",
+        alt: "Side view of the Police Hostel",
+      },
+    ],
+  },
+  {
+    name: "Jonkel Hostel",
+    details: "28 self-contained rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fd38cd0451d04443a8a9a0f89dfce319f?format=webp&width=800&height=1200",
+        alt: "Front view of Jonkel Hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fac0ec5ad35df4dbf98803634d9928aae?format=webp&width=800&height=1200",
+        alt: "Exterior view of Jonkel Hostel",
+      },
+    ],
+  },
+  {
+    name: "Peace of Mind Hostel",
+    details: "14 self-contained rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F1694f3005bc645f2911f59e9031b0d82?format=webp&width=800&height=1200",
+        alt: "Front view of Peace of Mind Hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fe97b3111a01349f1ab33f17eaf20260e?format=webp&width=800&height=1200",
+        alt: "Side view of Peace of Mind Hostel",
+      },
+    ],
+  },
+  {
+    name: "Gbenjo Hostel",
+    details: "10 standard rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fe410b5a59da64141853a1dda4ebcb21d?format=webp&width=800&height=1200",
+        alt: "Front view of Gbenjo Hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F9bf97d883ef246738d46fbc19b8cf1a0?format=webp&width=800&height=1200",
+        alt: "Side view of Gbenjo Hostel",
+      },
+    ],
+  },
+  {
+    name: "Military Hostel",
+    details: "10 self-contained rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fe1d61ee95a094f9091f089e3f7ce921c?format=webp&width=800&height=1200",
+        alt: "Exterior view of Military Hostel",
+      },
+    ],
+  },
+  {
+    name: "Amazing Hostel",
+    details: "15 self-contained rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fc8829d07417742b7875558452ef0dd5c?format=webp&width=800&height=1200",
+        alt: "Exterior view of Amazing Hostel",
+      },
+    ],
+  },
+  {
+    name: "Classic and Achievers",
+    details: "11 & 11 standard rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2Fa96faa9dba9640d2989da49c38e4bf0b?format=webp&width=800&height=1200",
+        alt: "Exterior view of Classic and Achievers hostel",
+      },
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F056d3a0030644f66a79c8928096909ec?format=webp&width=800&height=1200",
+        alt: "Second exterior view of Classic and Achievers hostel",
+      },
+    ],
+  },
+  {
+    name: "It Is Well Hostel",
+    details: "13 rooms",
+    images: [
+      {
+        src: "https://cdn.builder.io/api/v1/image/assets%2Fd51db21242644bff87f6c68e2397daf7%2F0c74d4a6fdec4fb3a7b56a0a025a80ee?format=webp&width=800&height=1200",
+        alt: "Exterior view of It Is Well Hostel",
+      },
+    ],
+  },
+];
+
+function HostelGallery({ hostel }: { hostel: (typeof hostels)[number] }) {
+  const [selected, setSelected] = useState(0);
+  const image = hostel.images[selected];
+
+  return (
+    <section aria-label={`${hostel.name} photo gallery`}>
+      <div className="rounded-xl overflow-hidden shadow-lg">
+        <AspectRatio ratio={16 / 9} className="bg-secondary/20">
+          <img src={image.src} alt={image.alt} className="w-full h-full object-cover" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+          <p className="absolute bottom-4 left-5 text-sm font-medium text-white sm:bottom-6 sm:left-7">
+            {hostel.name} · {hostel.details}
+          </p>
+          {hostel.images.length > 1 && (
+            <div className="absolute bottom-3 right-4 flex gap-2 sm:bottom-5 sm:right-6">
+              <button
+                type="button"
+                aria-label={`Previous ${hostel.name} photo`}
+                onClick={() => setSelected((selected - 1 + hostel.images.length) % hostel.images.length)}
+                className="rounded-full bg-white/90 p-2 text-foreground shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                aria-label={`Next ${hostel.name} photo`}
+                onClick={() => setSelected((selected + 1) % hostel.images.length)}
+                className="rounded-full bg-white/90 p-2 text-foreground shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          )}
+        </AspectRatio>
+      </div>
+      {hostel.images.length > 1 && (
+        <div className={`mt-4 grid gap-3 sm:gap-4 ${hostel.images.length === 3 ? "grid-cols-3" : "grid-cols-2"}`} aria-label={`Choose a ${hostel.name} photo`}>
+          {hostel.images.map((photo, index) => (
+            <button
+              key={photo.src}
+              type="button"
+              aria-label={`View photo ${index + 1}: ${photo.alt}`}
+              aria-pressed={selected === index}
+              onClick={() => setSelected(index)}
+              className={`overflow-hidden rounded-lg border-2 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected === index ? "border-primary" : "border-transparent opacity-70 hover:opacity-100"}`}
+            >
+              <img src={photo.src} alt="" className="h-20 w-full object-cover sm:h-28" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function HostelsSection() {
+  return (
+    <section id="hostels" className="bg-secondary/10 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-10 text-center">
+          <h2 className="text-4xl font-bold text-foreground">Our Hostels</h2>
+          <p className="mt-3 text-lg text-muted-foreground">
+            Explore accommodation across our campus.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
+          {hostels.map((hostel) => (
+            <HostelGallery key={hostel.name} hostel={hostel} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const features = [
@@ -94,18 +293,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hostel Building Image Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="rounded-xl overflow-hidden shadow-lg">
-          <AspectRatio ratio={16 / 9} className="bg-secondary/20">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2F09bfc473205142bd8eaf54b6aaca1b7a%2F2da5f5e0c15c472190979aec6d38f515?format=webp&width=800"
-              alt="Hostel Building"
-              className="w-full h-full object-cover"
-            />
-          </AspectRatio>
-        </div>
-      </section>
+      <HostelsSection />
 
       {/* Features Section */}
       <section id="features" className="bg-secondary/20 py-20">

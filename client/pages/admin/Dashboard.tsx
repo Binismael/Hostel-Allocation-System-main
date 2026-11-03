@@ -9,22 +9,29 @@ import {
   Building2,
   DoorOpen,
   FileText,
-  Plus,
   Search,
-  MoreVertical,
+  Eye,
+  CreditCard,
+  BedDouble,
+  ClipboardList,
+  Hourglass,
 } from "lucide-react";
-import {
-  getStudents,
-  getAllocations,
-  getRooms,
-  getBlocks,
-} from "@/lib/supabase-db";
+import { getAllocations } from "@/lib/supabase-db";
 import { supabase } from "@/lib/supabase";
+import { hasVerifiedRoomPayment } from "@/lib/admin-workflow";
+import StatusBadge from "@/components/StatusBadge";
+
+const count = (table: string, filter?: [string, string]) => {
+  let q = supabase.from(table).select("*", { count: "exact", head: true });
+  if (filter) q = q.eq(filter[0], filter[1]);
+  return q;
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchAllocation, setSearchAllocation] = useState("");
   const [stats, setStats] = useState<any[]>([]);
+  const [workflow, setWorkflow] = useState<any[]>([]);
   const [recentAllocations, setRecentAllocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,14 +47,31 @@ const Dashboard = () => {
           { count: roomsCount },
           { count: allocationsCount },
           allocationsRes,
+          { count: paymentsToReview },
+          { count: freeBunks },
+          { count: totalBunks },
+          { count: pendingRequests },
         ] = await Promise.all([
-          supabase.from("students").select("*", { count: "exact", head: true }),
-          supabase.from("blocks").select("*", { count: "exact", head: true }),
-          supabase.from("rooms").select("*", { count: "exact", head: true }),
-          supabase
-            .from("allocations")
-            .select("*", { count: "exact", head: true }),
+          count("students"),
+          count("blocks"),
+          count("rooms"),
+          count("allocations"),
           getAllocations(),
+          count("hostel_payments", ["status", "submitted"]),
+          count("bunks", ["status", "available"]),
+          count("bunks"),
+          count("room_requests", ["status", "pending"]),
+        ]);
+
+        const awaitingBunk = (allocationsRes.data || []).filter(
+          (a: any) => a.status === "pending" && hasVerifiedRoomPayment(a),
+        ).length;
+
+        setWorkflow([
+          { label: "Payments to review", value: paymentsToReview || 0, icon: CreditCard, href: "/admin/payments" },
+          { label: "Paid, awaiting bunk", value: awaitingBunk, icon: Hourglass, href: "/admin/allocations?filter=awaiting" },
+          { label: "Pending room requests", value: pendingRequests || 0, icon: ClipboardList, href: "/admin/room-requests" },
+          { label: "Free bunks", value: `${freeBunks || 0} / ${totalBunks || 0}`, icon: BedDouble, href: "/admin/occupied-rooms" },
         ]);
 
         // Set stats
@@ -87,6 +111,7 @@ const Dashboard = () => {
         const formatted_allocations = allocations
           .slice(0, 5)
           .map((alloc: any) => ({
+            dbId: alloc.id,
             id: alloc.allocation_id,
             studentName: alloc.students?.name || "Unknown",
             room: alloc.rooms?.room_number || "—",
@@ -104,19 +129,6 @@ const Dashboard = () => {
 
     loadData();
   }, []);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-amber-100 text-amber-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   const filteredAllocations = recentAllocations.filter(
     (alloc) =>
@@ -173,6 +185,30 @@ const Dashboard = () => {
               })}
         </div>
 
+        {!loading && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {workflow.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => navigate(item.href)}
+                  className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 text-left transition-colors hover:border-primary hover:bg-primary/5"
+                >
+                  <div className="rounded-lg bg-primary/10 p-2.5 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{item.value}</p>
+                    <p className="text-sm text-muted-foreground">{item.label}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Recent Allocations Section */}
         <Card className="p-6 border border-border">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -191,10 +227,10 @@ const Dashboard = () => {
               </div>
               <Button
                 className="gap-2 bg-primary hover:bg-primary/90 whitespace-nowrap"
-                onClick={() => navigate("/admin/allocations/add")}
+                onClick={() => navigate("/admin/payments")}
               >
-                <Plus className="w-4 h-4" />
-                New Allocation
+                <CreditCard className="w-4 h-4" />
+                Review payments
               </Button>
             </div>
           </div>
@@ -271,12 +307,7 @@ const Dashboard = () => {
                         {allocation.block}
                       </td>
                       <td className="py-4 px-4">
-                        <span
-                          className={`text-xs px-2.5 py-1 rounded-full font-medium ${getStatusColor(allocation.status)}`}
-                        >
-                          {allocation.status.charAt(0).toUpperCase() +
-                            allocation.status.slice(1)}
-                        </span>
+                        <StatusBadge status={allocation.status} />
                       </td>
                       <td className="py-4 px-4 text-sm text-foreground">
                         {allocation.date}
@@ -286,8 +317,10 @@ const Dashboard = () => {
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0"
+                          title="View details"
+                          onClick={() => navigate(`/admin/allocations/view/${allocation.dbId}`)}
                         >
-                          <MoreVertical className="w-4 h-4" />
+                          <Eye className="w-4 h-4" />
                         </Button>
                       </td>
                     </tr>

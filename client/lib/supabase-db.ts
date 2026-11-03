@@ -50,6 +50,15 @@ export async function createStudent(student: any) {
   return { data, error };
 }
 
+export async function upsertStudent(student: any) {
+  const { data, error } = await supabase
+    .from("students")
+    .upsert([student], { onConflict: "id" })
+    .select()
+    .single();
+  return { data, error };
+}
+
 export async function updateStudent(id: string, updates: any) {
   const { data, error } = await supabase
     .from("students")
@@ -115,7 +124,9 @@ export async function getAllocations() {
       `
       *,
       students (id, name, email, student_id),
-      rooms (id, room_number, block_id, blocks (name))
+      rooms (id, room_number, block_id, blocks (name)),
+      bunks (bunk_number),
+      hostel_payments (status, hostel_fee_tiers (code, eligible_room_categories))
     `,
     )
     .order("created_at", { ascending: false });
@@ -129,7 +140,9 @@ export async function getAllocation(id: string) {
       `
       *,
       students (id, name, email, student_id),
-      rooms (id, room_number, block_id, blocks (name))
+      rooms (id, room_number, block_id, capacity, blocks (name)),
+      bunks (bunk_number, level),
+      hostel_payments (status, payment_reference, hostel_fee_tiers (code, name, eligible_room_categories))
     `,
     )
     .eq("id", id)
