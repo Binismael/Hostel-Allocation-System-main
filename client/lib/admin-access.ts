@@ -63,17 +63,10 @@ export async function createAdmin(input: {
   role: AdminRole;
   permissions: Permission[];
 }) {
-  const { data: sessionData } = await supabase.auth.getSession();
-  const response = await fetch("/api/admins", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${sessionData.session?.access_token ?? ""}`,
-    },
-    body: JSON.stringify(input),
-  });
-  const body = await response.json().catch(() => ({}));
-  return { error: response.ok ? null : (body.error as string) ?? "Could not add admin." };
+  const { error } = await supabase.functions.invoke("create-admin", { body: input });
+  if (!error) return { error: null };
+  const details = await (error as { context?: Response }).context?.json?.().catch(() => null);
+  return { error: (details?.error as string) ?? "Could not add admin." };
 }
 
 export async function updateAdminAccess(

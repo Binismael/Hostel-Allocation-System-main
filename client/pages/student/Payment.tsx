@@ -23,9 +23,7 @@ import PaymentMethodSelector from "@/components/student/payment/PaymentMethodSel
 import { getSettings, type Settings } from "@/lib/settings";
 import {
   confirmPaystackPayment,
-  hasOpenPayment,
   openPaystackCheckout,
-  PAYSTACK_PUBLIC_KEY,
   type PaymentMethod,
 } from "@/lib/paystack";
 
@@ -46,9 +44,7 @@ const Payment = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submittedReference, setSubmittedReference] = useState("");
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [method, setMethod] = useState<PaymentMethod>(
-    PAYSTACK_PUBLIC_KEY ? "paystack" : "bank_transfer",
-  );
+  const [method, setMethod] = useState<PaymentMethod>("paystack");
   const [paidOnline, setPaidOnline] = useState<Awaited<
     ReturnType<typeof confirmPaystackPayment>
   > | null>(null);
@@ -100,22 +96,10 @@ const Payment = () => {
       setError("This fee is not available right now. Please contact the hostel office.");
       return;
     }
-    if (!studentId || !user?.email) {
-      setError("Your student profile could not be found. Please log in again.");
-      return;
-    }
-
     setError("");
     setSubmitting(true);
     try {
-      if (await hasOpenPayment(studentId)) {
-        setError("You already have a payment awaiting review or verified. Check My Payments.");
-        return;
-      }
       const reference = await openPaystackCheckout({
-        email: user.email,
-        amount: selectedTier.amount,
-        studentId,
         tierCode: selectedTier.code,
         roomId: type === "room_fee" ? room.id : null,
       });
@@ -278,7 +262,6 @@ const Payment = () => {
                   setMethod(m);
                   setError("");
                 }}
-                paystackAvailable={!!PAYSTACK_PUBLIC_KEY}
               />
             </section>
 
