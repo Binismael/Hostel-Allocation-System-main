@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Building2, Star } from "lucide-react";
+import { Building2, ChevronDown, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { RoomCategory } from "@/lib/hostel-directory";
@@ -27,6 +28,10 @@ const HostelCategoryCard = ({
   const totalCapacity = rooms.reduce((sum, r) => sum + (r.capacity || 0), 0);
   const Icon = category === "premium" ? Star : Building2;
   const extraAmenities = rooms.map((r) => r.amenities).filter(Boolean).join(",");
+  const [expanded, setExpanded] = useState(false);
+  const previewRoom =
+    rooms.find((r) => r.status !== "filled" && r.status !== "occupied") ?? rooms[0];
+  const detailsId = `hostel-details-${blockName}-${category}`.replace(/\s+/g, "-");
 
   return (
     <Card
@@ -48,7 +53,14 @@ const HostelCategoryCard = ({
         </span>
       ) : null}
 
-      <div className="mb-4 flex items-start gap-3">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        aria-controls={detailsId}
+        className="block w-full rounded-md text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+      <div className="mb-4 flex items-start gap-3 pr-20">
         <Icon
           className={`mt-0.5 h-6 w-6 flex-shrink-0 ${category === "premium" ? "text-amber-600" : "text-blue-600"}`}
           aria-hidden="true"
@@ -80,17 +92,30 @@ const HostelCategoryCard = ({
         </div>
       </dl>
 
-      <AmenityList category={category} extraAmenities={extraAmenities} />
+      <span className="flex items-center justify-center gap-1 text-sm font-medium text-primary">
+        {expanded ? "Hide details" : "View amenities & room"}
+        <ChevronDown
+          className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        />
+      </span>
+      </button>
 
-      <div className="mt-6 space-y-3">
-        <p className="text-sm font-medium text-foreground">Rooms</p>
-        <p className="text-xs text-muted-foreground">
-          Photos show the typical room, bunk bed, and toilet for this category.
-        </p>
-        {rooms.map((room) => (
-          <RoomPreviewCard key={room.id} room={room} category={category} />
-        ))}
-      </div>
+      {expanded && (
+        <div id={detailsId} className="mt-4">
+          <AmenityList category={category} extraAmenities={extraAmenities} />
+
+          {previewRoom && (
+            <div className="mt-6 space-y-3">
+              <p className="text-sm font-medium text-foreground">Room preview</p>
+              <p className="text-xs text-muted-foreground">
+                Photos show the typical room, bunk bed, and toilet for this category.
+              </p>
+              <RoomPreviewCard room={previewRoom} category={category} />
+            </div>
+          )}
+        </div>
+      )}
 
       {isAllocated && (
         <Button asChild className="mt-4 w-full bg-green-600 hover:bg-green-700">
